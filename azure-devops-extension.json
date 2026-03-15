@@ -9,6 +9,18 @@
     "Azure Boards",
     "Azure Test Plans"
   ],
+  "tags": [
+    "tags",
+    "work items",
+    "tag manager",
+    "tag cleanup",
+    "merge tags",
+    "delete tags",
+    "bulk tags",
+    "work item tags",
+    "tag administration",
+    "boards"
+  ],
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"
