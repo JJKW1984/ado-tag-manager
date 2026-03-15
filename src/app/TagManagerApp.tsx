@@ -24,6 +24,23 @@ type DialogState =
 const tagService = new TagService();
 const COUNT_CONFIRM_THRESHOLD = 10;
 const PAGE_SIZE = 25;
+const LOG_STORAGE_KEY = "ado-tag-manager:activity-log";
+const LOG_MAX_ENTRIES = 200;
+
+function loadPersistedLog(): LogEntry[] {
+  try {
+    const raw = localStorage.getItem(LOG_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as Array<Omit<LogEntry, "timestamp"> & { timestamp: string }>;
+    return parsed.map((e) => ({ ...e, timestamp: new Date(e.timestamp) }));
+  } catch {
+    return [];
+  }
+}
+
+// Read once at module load so both the initial state and the ID counter seed are consistent.
+const _initialLog = loadPersistedLog();
+const _initialLogId = _initialLog.length > 0 ? Math.max(..._initialLog.map((e) => e.id)) : 0;
 
 export const TagManagerApp: React.FC = () => {
   const [tags, setTags] = useState<TagItem[]>([]);
@@ -31,10 +48,21 @@ export const TagManagerApp: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [dialog, setDialog] = useState<DialogState>(null);
-  const [logEntries, setLogEntries] = useState<LogEntry[]>([]);
+  const [logEntries, setLogEntries] = useState<LogEntry[]>(_initialLog);
   const [alphaFilter, setAlphaFilter] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
-  const logIdRef = useRef(0);
+  const [projectName, setProjectName] = useState<string>("");
+  const logIdRef = useRef(_initialLogId);
+
+  // Persist log whenever it changes
+  useEffect(() => {
+    try {
+      const toStore = logEntries.slice(-LOG_MAX_ENTRIES);
+      localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(toStore));
+    } catch {
+      // localStorage unavailable (e.g. private browsing quota) — silently skip
+    }
+  }, [logEntries]);
 
   // --- Helpers ---
 
@@ -75,7 +103,10 @@ export const TagManagerApp: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => { loadTags(); }, [loadTags]);
+  useEffect(() => {
+    loadTags();
+    tagService.getProjectName().then(setProjectName).catch(() => {});
+  }, [loadTags]);
 
   // --- Selection ---
 
@@ -114,13 +145,15 @@ export const TagManagerApp: React.FC = () => {
 
   // --- Background jobs ---
 
+  const proj = projectName ? `[${projectName}] ` : "";
+
   const runDeleteJobs = async (tagsToDelete: TagItem[]) => {
     setDialog(null);
     for (const tag of tagsToDelete) {
-      const logId = appendLog(`Deleting "${tag.name}"…`, "running");
+      const logId = appendLog(`${proj}Deleting "${tag.name}"…`, "running");
       try {
         await tagService.deleteTagById(tag.id);
-        updateLog(logId, `✓ Deleted "${tag.name}"`, "success");
+        updateLog(logId, `${proj}✓ Deleted "${tag.name}"`, "success");
         setTags((prev) => prev.filter((t) => t.id !== tag.id));
         setSelectedIds((prev) => {
           const next = new Set(prev);
@@ -129,7 +162,7 @@ export const TagManagerApp: React.FC = () => {
         });
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
-        updateLog(logId, `✗ Failed to delete "${tag.name}": ${msg}`, "error");
+        updateLog(logId, `${proj}✗ Failed to delete "${tag.name}": ${msg}`, "error");
       }
     }
   };
@@ -139,14 +172,14 @@ export const TagManagerApp: React.FC = () => {
     const failedSourceIds = new Set<string>();
     for (const source of sources) {
       const logId = appendLog(
-        `Merging "${source.name}" → "${targetName}"…`,
+        `${proj}Merging "${source.name}" → "${targetName}"…`,
         "running"
       );
       try {
         const result = await tagService.mergeTag(source.id, source.name, targetName);
         updateLog(
           logId,
-          `✓ Merged "${source.name}" → "${targetName}" (${result.affectedCount} work item${result.affectedCount !== 1 ? "s" : ""} updated)`,
+          `${proj}✓ Merged "${source.name}" → "${targetName}" (${result.affectedCount} work item${result.affectedCount !== 1 ? "s" : ""} updated)`,
           "success"
         );
         setTags((prev) => prev.filter((t) => t.id !== source.id));
@@ -157,7 +190,7 @@ export const TagManagerApp: React.FC = () => {
         });
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
-        updateLog(logId, `✗ Failed to merge "${source.name}": ${msg}`, "error");
+        updateLog(logId, `${proj}✗ Failed to merge "${source.name}": ${msg}`, "error");
         failedSourceIds.add(source.id);
       }
     }
@@ -176,15 +209,15 @@ export const TagManagerApp: React.FC = () => {
       updateTagCount(tag.id, -1);
     }
     for (const tag of tagsToCount) {
-      const logId = appendLog(`Counting "${tag.name}" across all projects…`, "running");
+      const logId = appendLog(`${proj}Counting "${tag.name}" across all projects…`, "running");
       try {
         const count = await tagService.countTagAcrossProjects(tag.name);
         updateTagCount(tag.id, count);
-        updateLog(logId, `✓ "${tag.name}" — ${count} work item${count !== 1 ? "s" : ""}`, "success");
+        updateLog(logId, `${proj}✓ "${tag.name}" — ${count} work item${count !== 1 ? "s" : ""}`, "success");
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         updateTagCount(tag.id, 0);
-        updateLog(logId, `✗ Failed to count "${tag.name}": ${msg}`, "error");
+        updateLog(logId, `${proj}✗ Failed to count "${tag.name}": ${msg}`, "error");
       }
     }
   };
@@ -332,6 +365,7 @@ export const TagManagerApp: React.FC = () => {
       {dialog?.type === "merge" && (
         <MergeDialog
           sources={dialog.sources}
+          allTags={tags}
           onConfirm={(targetName) => runMergeJobs(dialog.sources, targetName)}
           onCancel={() => setDialog(null)}
         />

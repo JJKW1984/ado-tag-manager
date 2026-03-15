@@ -1,6 +1,6 @@
 {
   "name": "ado-tag-manager",
-  "version": "1.0.0",
+  "version": "0.2.7",
   "scripts": {
     "build": "webpack --mode production",
     "dev": "webpack serve --mode development",

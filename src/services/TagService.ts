@@ -27,6 +27,10 @@ export class TagService {
     return project.name;
   }
 
+  async getProjectName(): Promise<string> {
+    return this.getProject();
+  }
+
   /** Build an authenticated fetch call to the _apis/wit/tags endpoint */
   private async tagsApiRequest<T>(
     method: string,
