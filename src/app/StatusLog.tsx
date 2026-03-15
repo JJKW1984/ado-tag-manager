@@ -21,7 +21,7 @@ const STATUS_COLORS: Record<LogEntry["status"], string> = {
 };
 
 export const StatusLog: React.FC<StatusLogProps> = ({ entries }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

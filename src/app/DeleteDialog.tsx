@@ -35,13 +35,42 @@ export const DeleteDialog: React.FC<DeleteDialogProps> = ({
         {tags.length !== 1 ? "them" : "it"} from all work items and pull
         requests. This cannot be undone.
       </MessageCard>
-      <ul style={{ margin: "12px 0 0 0", paddingLeft: "20px" }}>
+      <div
+        style={{
+          border: "1px solid var(--palette-neutral-10, #e0e0e0)",
+          borderRadius: "2px",
+          margin: "12px 0 4px",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            padding: "6px 12px",
+            background: "var(--palette-neutral-4, #f8f8f8)",
+            borderBottom: "1px solid var(--palette-neutral-10, #e0e0e0)",
+            fontSize: "12px",
+            fontWeight: 600,
+            color: "var(--palette-neutral-60, #666)",
+            textTransform: "uppercase",
+            letterSpacing: "0.5px",
+          }}
+        >
+          Tag
+        </div>
         {tags.map((t) => (
-          <li key={t.id}>
-            <strong>{t.name}</strong>
-          </li>
+          <div
+            key={t.id}
+            style={{
+              padding: "8px 12px",
+              borderBottom: "1px solid var(--palette-neutral-10, #e0e0e0)",
+              fontSize: "13px",
+              color: "var(--text-primary-color, #1e1e1e)",
+            }}
+          >
+            {t.name}
+          </div>
         ))}
-      </ul>
+      </div>
     </Dialog>
   );
 };

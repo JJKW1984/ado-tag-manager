@@ -9,6 +9,7 @@ import { MessageCard, MessageCardSeverity } from "azure-devops-ui/MessageCard";
 import { TagService } from "../services/TagService";
 import { TagItem, LogEntry } from "../types";
 import { TagTable } from "./TagTable";
+import { AlphaNav } from "./AlphaNav";
 import { DeleteDialog } from "./DeleteDialog";
 import { MergeDialog } from "./MergeDialog";
 import { CountConfirmDialog } from "./CountConfirmDialog";
@@ -22,6 +23,7 @@ type DialogState =
 
 const tagService = new TagService();
 const COUNT_CONFIRM_THRESHOLD = 10;
+const PAGE_SIZE = 25;
 
 export const TagManagerApp: React.FC = () => {
   const [tags, setTags] = useState<TagItem[]>([]);
@@ -30,6 +32,8 @@ export const TagManagerApp: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [dialog, setDialog] = useState<DialogState>(null);
   const [logEntries, setLogEntries] = useState<LogEntry[]>([]);
+  const [alphaFilter, setAlphaFilter] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(0);
   const logIdRef = useRef(0);
 
   // --- Helpers ---
@@ -185,7 +189,27 @@ export const TagManagerApp: React.FC = () => {
     }
   };
 
+  // --- Alpha filter + paging ---
+
+  const handleAlphaFilter = (letter: string | null) => {
+    setAlphaFilter(letter);
+    setCurrentPage(0);
+  };
+
   // --- Render ---
+
+  const filteredTags = alphaFilter
+    ? tags.filter((t) => {
+        const ch = t.name[0]?.toUpperCase();
+        return alphaFilter === "#"
+          ? !(ch >= "A" && ch <= "Z")
+          : ch === alphaFilter;
+      })
+    : tags;
+
+  const totalPages = Math.max(1, Math.ceil(filteredTags.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages - 1);
+  const pagedTags = filteredTags.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
 
   const n = selectedIds.size;
   const sel = n > 0 ? ` (${n})` : "";
@@ -232,20 +256,70 @@ export const TagManagerApp: React.FC = () => {
           </MessageCard>
         )}
         <Card>
-          {loading ? (
-            <div style={{ display: "flex", justifyContent: "center", padding: "32px" }}>
-              <Spinner size={SpinnerSize.large} label="Loading tags…" />
-            </div>
-          ) : (
-            <TagTable
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <AlphaNav
               tags={tags}
-              selectedIds={selectedIds}
-              onToggle={handleToggle}
-              onToggleAll={handleToggleAll}
+              activeFilter={alphaFilter}
+              onFilter={handleAlphaFilter}
             />
-          )}
-          <StatusLog entries={logEntries} />
+            {loading ? (
+              <div style={{ display: "flex", justifyContent: "center", padding: "32px" }}>
+                <Spinner size={SpinnerSize.large} label="Loading tags…" />
+              </div>
+            ) : (
+              <TagTable
+                tags={pagedTags}
+                selectedIds={selectedIds}
+                onToggle={handleToggle}
+                onToggleAll={handleToggleAll}
+              />
+            )}
+            {!loading && totalPages > 1 && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  gap: "12px",
+                  padding: "8px 4px 4px",
+                  borderTop: "1px solid var(--palette-neutral-10, #e0e0e0)",
+                  marginTop: "4px",
+                  fontSize: "13px",
+                  color: "var(--palette-neutral-60, #555)",
+                }}
+              >
+                <button
+                  disabled={safePage === 0}
+                  onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                  style={{
+                    border: "none", background: "none", cursor: safePage === 0 ? "default" : "pointer",
+                    color: safePage === 0 ? "var(--palette-neutral-20, #ccc)" : "var(--communication-foreground, #0078d4)",
+                    fontSize: "13px", padding: "2px 4px",
+                  }}
+                >
+                  ← Previous
+                </button>
+                <span>
+                  Page {safePage + 1} of {totalPages}
+                  {" "}({filteredTags.length} tag{filteredTags.length !== 1 ? "s" : ""})
+                </span>
+                <button
+                  disabled={safePage >= totalPages - 1}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+                  style={{
+                    border: "none", background: "none",
+                    cursor: safePage >= totalPages - 1 ? "default" : "pointer",
+                    color: safePage >= totalPages - 1 ? "var(--palette-neutral-20, #ccc)" : "var(--communication-foreground, #0078d4)",
+                    fontSize: "13px", padding: "2px 4px",
+                  }}
+                >
+                  Next →
+                </button>
+              </div>
+            )}
+          </div>
         </Card>
+        <StatusLog entries={logEntries} />
       </div>
 
       {dialog?.type === "delete" && (
