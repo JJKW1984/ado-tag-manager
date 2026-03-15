@@ -2,13 +2,13 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Card } from "azure-devops-ui/Card";
 import { Header, TitleSize } from "azure-devops-ui/Header";
+import { IHeaderCommandBarItem } from "azure-devops-ui/HeaderCommandBar";
 import { Page } from "azure-devops-ui/Page";
 import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
 import { MessageCard, MessageCardSeverity } from "azure-devops-ui/MessageCard";
 import { TagService } from "../services/TagService";
 import { TagItem, LogEntry } from "../types";
 import { TagTable } from "./TagTable";
-import { ActionBar } from "./ActionBar";
 import { DeleteDialog } from "./DeleteDialog";
 import { MergeDialog } from "./MergeDialog";
 import { CountConfirmDialog } from "./CountConfirmDialog";
@@ -187,12 +187,39 @@ export const TagManagerApp: React.FC = () => {
 
   // --- Render ---
 
+  const n = selectedIds.size;
+  const sel = n > 0 ? ` (${n})` : "";
+  const commandBarItems: IHeaderCommandBarItem[] = [
+    {
+      id: "delete",
+      text: `Delete${sel}`,
+      disabled: n === 0,
+      onActivate: handleDeleteClick,
+      important: true,
+    },
+    {
+      id: "merge",
+      text: `Merge${sel}`,
+      disabled: n === 0,
+      onActivate: handleMergeClick,
+      important: true,
+    },
+    {
+      id: "count",
+      text: `Count${sel}`,
+      disabled: n === 0,
+      onActivate: handleCountClick,
+      important: true,
+    },
+  ];
+
   return (
     <Page className="tag-manager-page">
       <Header
         title="Tag Manager"
         titleSize={TitleSize.Large}
         description="Manage work item tags across this project."
+        commandBarItems={commandBarItems}
       />
       <div className="page-content">
         {error && (
@@ -205,12 +232,6 @@ export const TagManagerApp: React.FC = () => {
           </MessageCard>
         )}
         <Card>
-          <ActionBar
-            selectedCount={selectedIds.size}
-            onDelete={handleDeleteClick}
-            onMerge={handleMergeClick}
-            onCount={handleCountClick}
-          />
           {loading ? (
             <div style={{ display: "flex", justifyContent: "center", padding: "32px" }}>
               <Spinner size={SpinnerSize.large} label="Loading tags…" />
