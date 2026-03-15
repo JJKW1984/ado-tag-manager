@@ -36,8 +36,7 @@ export const TagTable: React.FC<TagTableProps> = ({
       <ZeroData
         primaryText="No tags found"
         secondaryText="This project has no work item tags yet."
-        imageAltText="No tags"
-        imagePath=""
+        imageAltText=""
       />
     );
   }
