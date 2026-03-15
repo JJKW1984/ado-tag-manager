@@ -132,6 +132,7 @@ export const TagManagerApp: React.FC = () => {
 
   const runMergeJobs = async (sources: TagItem[], targetName: string) => {
     setDialog(null);
+    const failedSourceIds = new Set<string>();
     for (const source of sources) {
       const logId = appendLog(
         `Merging "${source.name}" → "${targetName}"…`,
@@ -153,16 +154,15 @@ export const TagManagerApp: React.FC = () => {
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         updateLog(logId, `✗ Failed to merge "${source.name}": ${msg}`, "error");
+        failedSourceIds.add(source.id);
       }
     }
     // Reload to pick up the new target tag if it was created.
-    // Preserve any IDs that are still in the tag list (failed merges stay selected).
-    const removedIds = sources.map((s) => s.id);
     await loadTags(); // resets selectedIds to empty
-    setSelectedIds((prev) => {
-      // Re-select any source IDs that are still present after reload
-      return new Set([...prev].filter((id) => removedIds.includes(id)));
-    });
+    // Re-select any sources that failed to merge so user can retry.
+    if (failedSourceIds.size > 0) {
+      setSelectedIds(failedSourceIds);
+    }
   };
 
   const runCountJobs = async (tagsToCount: TagItem[]) => {
