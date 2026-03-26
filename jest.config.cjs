@@ -7,7 +7,10 @@ module.exports = {
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json"],
   moduleNameMapper: {
     "\\.(css|scss)$": "identity-obj-proxy",
-    "\\.(png|jpg|jpeg|gif|svg)$": "<rootDir>/src/test/mocks/fileMock.js"
+    "\\.(png|jpg|jpeg|gif|svg)$": "<rootDir>/src/test/mocks/fileMock.js",
+    "^azure-devops-extension-api/WorkItemTracking$": "<rootDir>/src/test/mocks/modules/azureDevopsApiWorkItemTracking.ts",
+    "^azure-devops-extension-api/Core/CoreClient$": "<rootDir>/src/test/mocks/modules/azureDevopsApiCoreClient.ts",
+    "^azure-devops-extension-api/Common/CommonServices$": "<rootDir>/src/test/mocks/modules/azureDevopsApiCommonServices.ts"
   },
   transform: {
     "^.+\\.(ts|tsx)$": [
