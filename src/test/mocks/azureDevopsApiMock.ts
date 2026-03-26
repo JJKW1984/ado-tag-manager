@@ -6,13 +6,21 @@ type ClientToken = unknown;
 const clientMap = new Map<ClientToken, unknown>();
 
 export const mockWorkItemTrackingClient = {
-  queryByWiql: jest.fn(async () => ({ workItems: [] })),
-  getWorkItemsBatch: jest.fn(async () => []),
-  updateWorkItem: jest.fn(async () => ({})),
+  queryByWiql: jest.fn<Promise<{ workItems: Array<{ id: number }> }>, [unknown, string?]>(
+    async () => ({ workItems: [] })
+  ),
+  getWorkItemsBatch: jest.fn<Promise<Array<{ id: number; fields?: Record<string, unknown> }>>, [unknown, string?]>(
+    async () => []
+  ),
+  updateWorkItem: jest.fn<Promise<Record<string, never>>, [unknown, number, string?]>(
+    async () => ({})
+  ),
 };
 
 export const mockCoreClient = {
-  getProjects: jest.fn(async () => []),
+  getProjects: jest.fn<Promise<Array<{ name: string }>>, [unknown?, number?]>(
+    async () => []
+  ),
 };
 
 export const mockGetClient = jest.fn((token: ClientToken) => {
