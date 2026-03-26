@@ -15,3 +15,8 @@ beforeEach(() => {
 	resetAzureDevopsApiMock();
 	jest.restoreAllMocks();
 });
+
+Object.defineProperty(window.HTMLElement.prototype, "scrollIntoView", {
+	writable: true,
+	value: jest.fn(),
+});
