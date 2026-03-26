@@ -184,6 +184,17 @@ Recommended rollout:
 2. Validate core scenarios (merge, delete, count, paging, alpha filter).
 3. Publish public extension only after private validation passes.
 
+## Continuous Integration Quality Gates
+
+The repository includes an Azure Pipelines definition in `azure-pipelines.yml`.
+
+Pipeline gates:
+- Install dependencies with `npm ci`
+- Build with `npm run build`
+- Run tests with coverage via `npm run test:coverage`
+- Publish JUnit test results (`test-results/junit.xml`)
+- Publish Cobertura coverage (`coverage/cobertura-coverage.xml`)
+
 ## Update an Existing Extension
 
 For every update:

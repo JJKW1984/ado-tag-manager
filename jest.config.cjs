@@ -26,6 +26,7 @@ module.exports = {
     "!src/**/*.d.ts",
     "!src/test/**"
   ],
+  coverageReporters: ["text", "lcov", "cobertura"],
   coverageDirectory: "coverage",
   reporters: [
     "default",
