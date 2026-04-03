@@ -43,7 +43,10 @@ jobs:
         if: always()
         with:
           name: coverage
-          path: coverage/
+          path: |
+            coverage/lcov.info
+            coverage/coverage-final.json
+          if-no-files-found: warn
 
   publish:
     needs: build-and-test
