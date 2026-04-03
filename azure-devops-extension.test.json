@@ -1,0 +1,72 @@
+{
+  "manifestVersion": 1,
+  "id": "ado-tag-manager-develop",
+  "version": "0.2.7",
+  "name": "ADO Tag Manager (Develop)",
+  "description": "Merge, rename, and delete work item tags at scale.",
+  "publisher": "josephjohnkarl",
+  "categories": [
+    "Azure Boards",
+    "Azure Test Plans"
+  ],
+  "tags": [
+    "tags",
+    "work items",
+    "tag manager",
+    "tag cleanup",
+    "merge tags",
+    "delete tags",
+    "bulk tags",
+    "work item tags",
+    "tag administration",
+    "boards"
+  ],
+  "targets": [
+    {
+      "id": "Microsoft.VisualStudio.Services"
+    }
+  ],
+  "contributions": [
+    {
+      "id": "tag-manager-hub-develop",
+      "type": "ms.vss-web.hub",
+      "targets": [
+        "ms.vss-work-web.work-hub-group"
+      ],
+      "properties": {
+        "name": "Tag Manager",
+        "order": 99,
+        "uri": "dist/hub.html"
+      }
+    }
+  ],
+  "scopes": [
+    "vso.work",
+    "vso.work_write"
+  ],
+  "files": [
+    {
+      "path": "dist",
+      "addressable": true
+    },
+    {
+      "path": "static",
+      "addressable": true
+    }
+  ],
+  "icons": {
+    "default": "static/images/logo.png"
+  },
+  "links": {
+    "source": {
+      "uri": "https://github.com/JJKW1984/ado-tag-manager"
+    },
+    "author": {
+      "uri": "https://www.linkedin.com/in/josephjohnkarl/"
+    }
+  },
+  "public": false,
+  "galleryFlags": [
+    "Preview"
+  ]
+}
