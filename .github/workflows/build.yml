@@ -1,0 +1,126 @@
+name: Publish Azure Devops Extension to Marketplace
+
+on:
+    workflow_dispatch:
+        inputs:
+            initial_version:
+                description: Initial version when extension does not yet exist
+                required: true
+                default: 0.1.0
+    pull_request:
+        branches:
+            - main
+            - dev
+
+permissions:
+    contents: read
+
+env:
+    PUBLISHER_ID: ${{ vars.PUBLISHER_ID }}
+
+jobs:
+    build:
+        name: Build and Package
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
+
+            - uses: pnpm/action-setup@v4
+              with:
+                  version: 9
+
+            - name: Setup Node.js
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 #v4.4.0
+              with:
+                  node-version: 20
+
+            - id: resolve-manifest
+              name: Resolve manifest and extension ID
+              shell: bash
+              run: |
+                  TARGET="${{ github.base_ref }}"
+                  if [[ -z "$TARGET" ]]; then TARGET="${{ github.ref_name }}"; fi
+                  if [[ "$TARGET" == "main" ]]; then
+                    echo "extension-id=ado-tag-manager"        >> "$GITHUB_OUTPUT"
+                    echo "manifest-file=vss-extension.json"    >> "$GITHUB_OUTPUT"
+                  else
+                    echo "extension-id=ado-tag-manager-develop"   >> "$GITHUB_OUTPUT"
+                    echo "manifest-file=vss-extension-dev.json"   >> "$GITHUB_OUTPUT"
+                  fi
+
+            - name: Install dependencies
+              run: pnpm install
+
+            - name: Build
+              run: pnpm run build
+
+            - name: Test
+              shell: bash
+              run: |
+                  stop_marker="$(uuidgen)"
+                  echo "::stop-commands::$stop_marker"
+                  pnpm run test
+                  echo "::$stop_marker::"
+
+            - name: Lint
+              run: pnpm run lint
+
+            - name: Bundle
+              run: pnpm run bundle
+
+            - id: query
+              name: Query next patch version
+              continue-on-error: true
+              uses: jessehouwing/azdo-marketplace/query-version@main
+              with:
+                  auth-type: pat
+                  token: ${{ secrets.MARKETPLACE_PAT }}
+                  publisher-id: ${{ env.PUBLISHER_ID }}
+                  extension-id: ${{ steps.resolve-manifest.outputs.extension-id }}
+                  marketplace-version-action: Patch
+
+            - id: version
+              name: Resolve version (query or initial)
+              shell: bash
+              run: |
+                  if [[ "${{ steps.query.outcome }}" == "success" && -n "${{ steps.query.outputs.proposed-version }}" ]]; then
+                    echo "value=${{ steps.query.outputs.proposed-version }}" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "value=${{ inputs.initial_version || '0.1.0' }}" >> "$GITHUB_OUTPUT"
+                  fi
+
+            - id: package
+              name: Package VSIX
+              uses: jessehouwing/azdo-marketplace/package@main
+              with:
+                  publisher-id: ${{ env.PUBLISHER_ID }}
+                  extension-id: ${{ steps.resolve-manifest.outputs.extension-id }}
+                  manifest-file: ${{ steps.resolve-manifest.outputs.manifest-file }}
+                  extension-version: ${{ steps.version.outputs.value }}
+                  update-tasks-version: patch
+                  update-tasks-id: true
+                  output-path: ${{ runner.temp }}
+
+            - name: Upload VSIX artifact
+              uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f #v6.0.0
+              with:
+                  name: vsix-${{ steps.resolve-manifest.outputs.extension-id }}-${{ steps.version.outputs.value }}
+                  path: ${{ steps.package.outputs.vsix-file }}
+                  if-no-files-found: error
+
+            - name: Publish from VSIX
+              uses: jessehouwing/azdo-marketplace/publish@main
+              with:
+                  auth-type: pat
+                  token: ${{ secrets.MARKETPLACE_PAT }}
+                  use: vsix
+                  vsix-file: ${{ steps.package.outputs.vsix-file }}
+                  no-wait-validation: true
+
+            - name: Wait for validation
+              uses: jessehouwing/azdo-marketplace/wait-for-validation@main
+              with:
+                  auth-type: pat
+                  token: ${{ secrets.MARKETPLACE_PAT }}
+                  vsix-file: ${{ steps.package.outputs.vsix-file }}
