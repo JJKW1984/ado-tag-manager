@@ -72,7 +72,7 @@ jobs:
         run: pnpm run manifest:test
 
       - name: Package extension (dev)
-        run: tfx extension create --manifest-globs azure-devops-extension.test.json
+        run: pnpm exec tfx extension create --manifest-globs azure-devops-extension.test.json
 
       - name: Publish to Marketplace (dev)
         uses: jessehouwing/azdo-marketplace@v6
