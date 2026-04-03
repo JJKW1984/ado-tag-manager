@@ -5,15 +5,10 @@
     "build": "webpack --mode production",
     "dev": "webpack serve --mode development",
     "package": "tfx extension create --manifest-globs azure-devops-extension.json",
-<<<<<<< dev
-    "test": "jest",
-=======
     "manifest:test": "node scripts/create-manifest-variant.cjs test",
-    "package:test": "npm run manifest:test && tfx extension create --manifest-globs azure-devops-extension.test.json",
-    "publish:test": "npm run manifest:test && tfx extension publish --manifest-globs azure-devops-extension.test.json",
+    "package:test": "pnpm run manifest:test && tfx extension create --manifest-globs azure-devops-extension.test.json",
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
->>>>>>> main
     "test:coverage": "jest --coverage"
   },
   "dependencies": {

@@ -4,7 +4,4 @@ dist/
 .env
 coverage/
 test-results/
-<<<<<<< dev
-=======
 azure-devops-extension.test.json
->>>>>>> main
