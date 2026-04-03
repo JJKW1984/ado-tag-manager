@@ -69,7 +69,7 @@ jobs:
         run: pnpm run build
 
       - name: Generate test manifest
-        run: node scripts/create-manifest-variant.cjs test
+        run: pnpm run manifest:test
 
       - name: Package extension (dev)
         run: tfx extension create --manifest-globs azure-devops-extension.test.json
