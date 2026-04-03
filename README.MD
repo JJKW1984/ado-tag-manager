@@ -153,6 +153,48 @@ tfx extension publish \
 
 Then share/install the extension to your Azure DevOps organization from the Marketplace management UI.
 
+## Private Pre-Release Testing Workflow
+
+Use a private test variant before publishing the public extension update.
+
+This repository supports a generated test manifest with a different extension ID:
+- Base extension ID: `ado-tag-manager`
+- Test extension ID: `ado-tag-manager-develop`
+
+Generate and package the private test variant:
+
+```bash
+npm run build
+npm run package:test
+```
+
+Publish the private test variant:
+
+```bash
+npm run publish:test
+```
+
+What this does:
+- Creates `azure-devops-extension.test.json` from the base manifest
+- Marks the test variant as `public: false` and `galleryFlags: ["Preview"]`
+- Suffixes contribution IDs so the test variant can coexist safely
+
+Recommended rollout:
+1. Publish private variant to a test organization/canary org.
+2. Validate core scenarios (merge, delete, count, paging, alpha filter).
+3. Publish public extension only after private validation passes.
+
+## Continuous Integration Quality Gates
+
+The repository includes an Azure Pipelines definition in `azure-pipelines.yml`.
+
+Pipeline gates:
+- Install dependencies with `npm ci`
+- Build with `npm run build`
+- Run tests with coverage via `npm run test:coverage`
+- Publish JUnit test results (`test-results/junit.xml`)
+- Publish Cobertura coverage (`coverage/cobertura-coverage.xml`)
+
 ## Update an Existing Extension
 
 For every update:
