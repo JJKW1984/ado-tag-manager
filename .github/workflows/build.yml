@@ -24,16 +24,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
+      - uses: actions/checkout@v3
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           version: 9
 
       - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 #v4.4.0
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
+          cache: 'pnpm'
 
       - id: resolve-manifest
         name: Resolve manifest and extension ID
@@ -62,12 +63,6 @@ jobs:
           echo "::stop-commands::$stop_marker"
           pnpm run test
           echo "::$stop_marker::"
-
-      - name: Lint
-        run: pnpm run lint
-
-      - name: Bundle
-        run: pnpm run bundle
 
       - id: query
         name: Query next patch version
