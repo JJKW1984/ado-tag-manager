@@ -70,7 +70,7 @@ jobs:
         uses: jessehouwing/azdo-marketplace/query-version@main
         with:
           auth-type: pat
-          token: ${{ secrets.MARKETPLACE_PAT }}
+          token: ${{ secrets.MARKETPLACE_TOKEN }}
           publisher-id: ${{ env.PUBLISHER_ID }}
           extension-id: ${{ steps.resolve-manifest.outputs.extension-id }}
           marketplace-version-action: Patch
@@ -108,7 +108,7 @@ jobs:
         uses: jessehouwing/azdo-marketplace/publish@main
         with:
           auth-type: pat
-          token: ${{ secrets.MARKETPLACE_PAT }}
+          token: ${{ secrets.MARKETPLACE_TOKEN }}
           use: vsix
           vsix-file: ${{ steps.package.outputs.vsix-file }}
           no-wait-validation: true
@@ -117,5 +117,5 @@ jobs:
         uses: jessehouwing/azdo-marketplace/wait-for-validation@main
         with:
           auth-type: pat
-          token: ${{ secrets.MARKETPLACE_PAT }}
-          vsix-file: ${{ steps.package.outputs.vsix-file }}
+          token: ${{ secrets.MARKETPLACE_TOKEN }}
+          vsix-file: ${{ steps.package.outputs.vsix-file }} 
