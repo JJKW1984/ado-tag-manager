@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "ado-tag-manager-develop",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "name": "ADO Tag Manager (Develop)",
   "description": "Merge, rename, and delete work item tags at scale.",
   "publisher": "josephjohnkarl",
