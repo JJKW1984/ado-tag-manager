@@ -45,7 +45,7 @@ Use or adapt this structure as the project evolves:
 |   |-- services/
 |   `-- types/
 |-- static/
-|-- azure-devops-extension.json
+|-- vss-extension.json
 |-- package.json
 |-- tsconfig.json
 `-- README.MD
@@ -107,7 +107,7 @@ If you add a local dev server, ensure the extension manifest points to the corre
 
 ## Azure DevOps Extension Manifest
 
-The extension definition lives in `azure-devops-extension.json`.
+The extension definition lives in `vss-extension.json`.
 
 At minimum, keep these fields accurate:
 - `id`
@@ -135,7 +135,7 @@ Build and package:
 
 ```bash
 npm run build
-tfx extension create --manifest-globs azure-devops-extension.json
+tfx extension create --manifest-globs vss-extension.json
 ```
 
 This produces a `.vsix` package.
@@ -146,7 +146,7 @@ Publish privately first:
 
 ```bash
 tfx extension publish \
-	--manifest-globs azure-devops-extension.json \
+	--manifest-globs vss-extension.json \
 	--publisher "$AZDO_PUBLISHER_ID" \
 	--token "$AZDO_PAT"
 ```
@@ -175,7 +175,7 @@ npm run publish:test
 ```
 
 What this does:
-- Creates `azure-devops-extension.test.json` from the base manifest
+- Creates `vss-extension-dev.json` from the base manifest
 - Marks the test variant as `public: false` and `galleryFlags: ["Preview"]`
 - Suffixes contribution IDs so the test variant can coexist safely
 
@@ -200,13 +200,13 @@ Pipeline gates:
 For every update:
 
 1. Update code and tests
-2. Bump version in `azure-devops-extension.json` (semantic versioning recommended)
+2. Bump version in `vss-extension.json` (semantic versioning recommended)
 3. Rebuild and republish
 
 ```bash
 npm run build
 tfx extension publish \
-	--manifest-globs azure-devops-extension.json \
+	--manifest-globs vss-extension.json \
 	--publisher "$AZDO_PUBLISHER_ID" \
 	--token "$AZDO_PAT"
 ```

@@ -11,8 +11,8 @@ if (variant !== "test") {
 }
 
 const root = path.resolve(__dirname, "..");
-const baseManifestPath = path.join(root, "azure-devops-extension.json");
-const outManifestPath = path.join(root, "azure-devops-extension.test.json");
+const baseManifestPath = path.join(root, "vss-extension.json");
+const outManifestPath = path.join(root, "vss-extension-dev.json");
 
 const baseManifest = JSON.parse(fs.readFileSync(baseManifestPath, "utf8"));
 
