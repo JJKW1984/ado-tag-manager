@@ -1,56 +1,16 @@
 # ADO Tag Manager
 
-ADO Tag Manager is an Azure DevOps extension for cleaning up and standardizing Azure Boards tags across large work item sets.
+Developer guide for building, testing, packaging, and publishing the ADO Tag Manager Azure DevOps extension.
 
-It is designed for teams that need safe, repeatable tag maintenance without manual edits item-by-item.
+For Marketplace listing content, see `overview.md`.
 
-## Marketplace Summary
+## What This Repository Contains
 
-Clean up Azure Boards tags safely: merge duplicates, rename tags, and delete obsolete tags across work items.
-
-## What It Does
-
-This extension provides a management UI and API-backed operations to:
-- Merge tags
-- Rename tags
-- Delete tags
-
-## Typical Use Cases
-
-- Standardize inconsistent tags (`frontend`, `front-end`, `ui`)
-- Consolidate duplicate tag taxonomies after team merges
-- Remove stale tags no longer used for planning or reporting
-- Keep board filters and dashboards consistent over time
-
-## Required Permissions
-
-The extension requests the following Azure DevOps scopes:
-- `vso.work` (read work item data)
-- `vso.work_write` (update work item tags)
-
-These permissions are required for bulk tag maintenance operations.
-
-## Getting Started
-
-1. Install the extension from the Azure DevOps Marketplace.
-2. Open Azure Boards and navigate to the **Tag Manager** hub.
-3. Choose an operation (merge, rename, or delete).
-4. Validate the expected impact and apply the change.
-
-## Safety Model
-
-- Built for organization-level governance workflows
-- Uses Azure DevOps Work Item Tracking APIs
-- Intended for controlled, auditable tag updates
-
-The extension is built with the Azure DevOps Extension SDK and interacts with Azure DevOps APIs to perform safe, auditable tag maintenance across work items.
-
-## Why This Extension
-
-As organizations grow, tag sprawl creates reporting and board filtering issues. This extension helps administrators and project maintainers:
-- Consolidate duplicate tags (`frontend`, `front-end`, `ui`)
-- Standardize naming conventions
-- Remove obsolete tags
+- Production manifest: `vss-extension.json`
+- Development manifest: `vss-extension-dev.json`
+- Extension UI and logic: `src/`
+- Static assets: `static/`
+- Webpack output: `dist/`
 
 ## Features
 
@@ -92,10 +52,10 @@ Use or adapt this structure as the project evolves:
 Install the following before local development:
 
 1. Node.js 20+ (LTS recommended)
-2. npm 10+
-3. Azure DevOps organization where you can install private extensions
+2. pnpm
+3. Azure DevOps organization for extension testing
 4. Azure DevOps Personal Access Token (PAT) for publishing
-5. A publisher created in Visual Studio Marketplace
+5. Visual Studio Marketplace publisher
 
 ## Development Environment Setup
 
@@ -104,15 +64,16 @@ Install the following before local development:
 ```bash
 git clone https://github.com/<your-org>/ado-tag-manager.git
 cd ado-tag-manager
-npm install
+pnpm install
 ```
 
-### 2. Install global tooling
+### 2. Build and run locally
 
-`tfx-cli` is used to package and publish Azure DevOps extensions.
+Use project scripts during development:
 
 ```bash
-npm install -g tfx-cli
+pnpm build
+pnpm dev
 ```
 
 ### 3. Configure environment variables
@@ -130,20 +91,18 @@ Recommended PAT scopes for publishing and testing:
 - Extension management
 - Work Items (Read & Write)
 
-### 4. Build and run locally
-
-Use your project scripts (example):
+### 4. Run tests
 
 ```bash
-npm run build
-npm run dev
+pnpm test
+pnpm test:coverage
 ```
-
-If you add a local dev server, ensure the extension manifest points to the correct development asset URLs.
 
 ## Azure DevOps Extension Manifest
 
 The extension definition lives in `vss-extension.json`.
+
+Use `vss-extension-dev.json` for private pre-release validation.
 
 At minimum, keep these fields accurate:
 - `id`
@@ -154,6 +113,16 @@ At minimum, keep these fields accurate:
 - `contributions`
 
 When shipping updates, always bump `version`.
+
+## Script Reference
+
+- `pnpm build`: Create production bundle in `dist/`
+- `pnpm dev`: Run webpack dev server
+- `pnpm test`: Run Jest tests
+- `pnpm test:coverage`: Run tests with coverage output
+- `pnpm package`: Package production manifest (`vss-extension.json`)
+- `pnpm manifest:test`: Regenerate development manifest (`vss-extension-dev.json`)
+- `pnpm package:test`: Package development manifest (`vss-extension-dev.json`)
 
 ## Tag Operation Design Notes
 
@@ -167,47 +136,49 @@ Recommended behavior:
 
 ## Packaging the Extension
 
-Build and package:
+Build and package the production extension:
 
 ```bash
-npm run build
-tfx extension create --manifest-globs vss-extension.json
+pnpm build
+npx tfx extension create --manifest-globs vss-extension.json
 ```
 
 This produces a `.vsix` package.
 
 ## Publish the Extension
 
-Publish privately first:
+Publish the production extension:
 
 ```bash
-tfx extension publish \
+npx tfx extension publish \
 	--manifest-globs vss-extension.json \
 	--publisher "$AZDO_PUBLISHER_ID" \
 	--token "$AZDO_PAT"
 ```
 
-Then share/install the extension to your Azure DevOps organization from the Marketplace management UI.
-
 ## Private Pre-Release Testing Workflow
 
-Use a private test variant before publishing the public extension update.
+Use the development manifest for private validation before production updates.
 
-This repository supports a generated test manifest with a different extension ID:
-- Base extension ID: `ado-tag-manager`
-- Test extension ID: `ado-tag-manager-develop`
+This repository supports a separate development extension ID so it can coexist with production:
+- Production extension ID: `ado-tag-manager`
+- Development extension ID: `ado-tag-manager-develop`
 
-Generate and package the private test variant:
+Generate and package the development variant:
 
 ```bash
-npm run build
-npm run package:test
+pnpm build
+pnpm manifest:test
+pnpm package:test
 ```
 
-Publish the private test variant:
+Publish the development variant:
 
 ```bash
-npm run publish:test
+npx tfx extension publish \
+	--manifest-globs vss-extension-dev.json \
+	--publisher "$AZDO_PUBLISHER_ID" \
+	--token "$AZDO_PAT"
 ```
 
 What this does:
@@ -225,9 +196,9 @@ Recommended rollout:
 The repository includes an Azure Pipelines definition in `azure-pipelines.yml`.
 
 Pipeline gates:
-- Install dependencies with `npm ci`
-- Build with `npm run build`
-- Run tests with coverage via `npm run test:coverage`
+- Install dependencies with `pnpm install --frozen-lockfile`
+- Build with `pnpm build`
+- Run tests with coverage via `pnpm test:coverage`
 - Publish JUnit test results (`test-results/junit.xml`)
 - Publish Cobertura coverage (`coverage/cobertura-coverage.xml`)
 
@@ -240,8 +211,8 @@ For every update:
 3. Rebuild and republish
 
 ```bash
-npm run build
-tfx extension publish \
+pnpm build
+npx tfx extension publish \
 	--manifest-globs vss-extension.json \
 	--publisher "$AZDO_PUBLISHER_ID" \
 	--token "$AZDO_PAT"

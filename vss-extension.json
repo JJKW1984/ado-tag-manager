@@ -53,10 +53,18 @@
     {
       "path": "static",
       "addressable": true
+    },
+    {
+      "path": "overview.md"
     }
   ],
   "icons": {
     "default": "static/images/logo.png"
+  },
+  "content": {
+    "details": {
+      "path": "overview.md"
+    }
   },
   "links": {
     "source": {
