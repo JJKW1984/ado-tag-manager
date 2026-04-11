@@ -3,7 +3,7 @@
   "id": "ado-tag-manager",
   "version": "0.2.7",
   "name": "ADO Tag Manager",
-  "description": "Merge, rename, and delete work item tags at scale.",
+  "description": "Clean up Azure Boards tags safely: merge duplicates, rename tags, and delete obsolete tags across work items.",
   "publisher": "josephjohnkarl",
   "categories": [
     "Azure Boards",
@@ -65,5 +65,6 @@
     "author": {
       "uri": "https://www.linkedin.com/in/josephjohnkarl/"
     }
-  }
+  },
+  "public": true
 }
