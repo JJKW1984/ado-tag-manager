@@ -14,6 +14,7 @@ import { DeleteDialog } from "./DeleteDialog";
 import { MergeDialog } from "./MergeDialog";
 import { CountConfirmDialog } from "./CountConfirmDialog";
 import { StatusLog } from "./StatusLog";
+import { sanitizeError } from "../utils/sanitizeError";
 
 type DialogState =
   | { type: "delete"; tags: TagItem[] }
@@ -87,6 +88,22 @@ export const TagManagerApp: React.FC = () => {
     );
   }, []);
 
+  const proj = projectName ? `[${projectName}] ` : "";
+
+  const handleRename = useCallback(async (tagId: string, newName: string) => {
+    const original = tags.find((t) => t.id === tagId)?.name ?? tagId;
+    const logId = appendLog(`${proj}Renaming "${original}" → "${newName}"…`, "running");
+    try {
+      const updated = await tagService.renameTagById(tagId, newName);
+      setTags((prev) =>
+        prev.map((t) => (t.id === tagId ? { ...t, name: updated.name } : t))
+      );
+      updateLog(logId, `${proj}✓ Renamed "${original}" → "${updated.name}"`, "success");
+    } catch (e) {
+      updateLog(logId, `${proj}✗ Failed to rename "${original}": ${sanitizeError(e)}`, "error");
+    }
+  }, [tags, proj, appendLog, updateLog]);
+
   // --- Data loading ---
 
   const loadTags = useCallback(async () => {
@@ -144,8 +161,6 @@ export const TagManagerApp: React.FC = () => {
   };
 
   // --- Background jobs ---
-
-  const proj = projectName ? `[${projectName}] ` : "";
 
   const runDeleteJobs = async (tagsToDelete: TagItem[]) => {
     setDialog(null);
@@ -305,6 +320,8 @@ export const TagManagerApp: React.FC = () => {
                 selectedIds={selectedIds}
                 onToggle={handleToggle}
                 onToggleAll={handleToggleAll}
+                onRename={handleRename}
+                existingNames={tags.map((t) => t.name)}
               />
             )}
             {!loading && totalPages > 1 && (
