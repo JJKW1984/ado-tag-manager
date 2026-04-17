@@ -42,10 +42,9 @@ export const EditableTagName: React.FC<EditableTagNameProps> = ({
       await onRename(draft.trim());
     } catch {
       onCancel();
-    }
-    Promise.resolve().then(() => {
+    } finally {
       committedRef.current = false;
-    });
+    }
   };
 
   const cancel = () => {

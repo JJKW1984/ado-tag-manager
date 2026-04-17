@@ -130,8 +130,7 @@ describe("TagManagerApp — rename failure", () => {
 
     await waitFor(() => {
       expect(mockTagService.renameTagById).toHaveBeenCalled();
+      expect(screen.getByText("alpha")).toBeInTheDocument();
     });
-
-    expect(screen.getByText("alpha")).toBeInTheDocument();
   });
 });

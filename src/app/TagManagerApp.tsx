@@ -54,6 +54,7 @@ export const TagManagerApp: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [projectName, setProjectName] = useState<string>("");
   const logIdRef = useRef(_initialLogId);
+  const tagsRef = useRef<TagItem[]>([]);
 
   // Persist log whenever it changes
   useEffect(() => {
@@ -64,6 +65,10 @@ export const TagManagerApp: React.FC = () => {
       // localStorage unavailable (e.g. private browsing quota) — silently skip
     }
   }, [logEntries]);
+
+  useEffect(() => {
+    tagsRef.current = tags;
+  }, [tags]);
 
   // --- Helpers ---
 
@@ -91,7 +96,7 @@ export const TagManagerApp: React.FC = () => {
   const proj = projectName ? `[${projectName}] ` : "";
 
   const handleRename = useCallback(async (tagId: string, newName: string) => {
-    const original = tags.find((t) => t.id === tagId)?.name ?? tagId;
+    const original = tagsRef.current.find((t) => t.id === tagId)?.name ?? tagId;
     const logId = appendLog(`${proj}Renaming "${original}" → "${newName}"…`, "running");
     try {
       const updated = await tagService.renameTagById(tagId, newName);
@@ -102,7 +107,7 @@ export const TagManagerApp: React.FC = () => {
     } catch (e) {
       updateLog(logId, `${proj}✗ Failed to rename "${original}": ${sanitizeError(e)}`, "error");
     }
-  }, [tags, proj, appendLog, updateLog]);
+  }, [proj, appendLog, updateLog]);
 
   // --- Data loading ---
 
