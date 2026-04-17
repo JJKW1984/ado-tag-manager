@@ -40,6 +40,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     />
     {value && (
       <button
+        type="button"
         aria-label="Clear search"
         onClick={() => onChange("")}
         style={{
