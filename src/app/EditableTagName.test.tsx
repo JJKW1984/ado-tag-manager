@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { EditableTagName } from "./EditableTagName";
 
@@ -106,6 +106,28 @@ describe("EditableTagName — cancelling a rename", () => {
     await user.type(input, "something-else");
     await user.keyboard("[Escape]");
     expect(screen.getByText("old-tag")).toBeInTheDocument();
+  });
+
+  it("calls onCancel when onRename rejects (API failure)", async () => {
+    const onRename = jest.fn().mockRejectedValue(new Error("api error"));
+    const onCancel = jest.fn();
+    const user = userEvent.setup();
+    render(
+      <EditableTagName
+        name="old-tag"
+        onRename={onRename}
+        onCancel={onCancel}
+        existingNames={[]}
+      />
+    );
+    await user.dblClick(screen.getByText("old-tag"));
+    const input = screen.getByRole("textbox", { name: "Edit tag name" });
+    await user.clear(input);
+    await user.type(input, "new-name");
+    await user.keyboard("[Enter]");
+    await waitFor(() => {
+      expect(onCancel).toHaveBeenCalled();
+    });
   });
 });
 

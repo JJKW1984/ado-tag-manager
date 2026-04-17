@@ -19,7 +19,7 @@ interface TagTableProps {
   selectedIds: Set<string>;
   onToggle: (id: string) => void;
   onToggleAll: (select: boolean) => void;
-  onRename?: (tagId: string, newName: string) => void;
+  onRename?: (tagId: string, newName: string) => void | Promise<void>;
   existingNames?: string[];
 }
 

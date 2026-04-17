@@ -3,7 +3,7 @@ import { validateTagName } from "../utils/validateTagName";
 
 export interface EditableTagNameProps {
   name: string;
-  onRename: (newName: string) => void;
+  onRename: (newName: string) => void | Promise<void>;
   onCancel: () => void;
   existingNames: string[];
 }
@@ -21,7 +21,7 @@ export const EditableTagName: React.FC<EditableTagNameProps> = ({
   // Prevents blur from triggering a second commit after Enter already committed.
   const committedRef = useRef(false);
 
-  const commit = () => {
+  const commit = async () => {
     if (committedRef.current) return;
     const validation = validateTagName(draft);
     if (!validation.valid) {
@@ -38,8 +38,11 @@ export const EditableTagName: React.FC<EditableTagNameProps> = ({
     committedRef.current = true;
     setEditing(false);
     setError(null);
-    onRename(draft.trim());
-    // Reset after microtask so blur fired in the same tick is swallowed.
+    try {
+      await onRename(draft.trim());
+    } catch {
+      onCancel();
+    }
     Promise.resolve().then(() => {
       committedRef.current = false;
     });
