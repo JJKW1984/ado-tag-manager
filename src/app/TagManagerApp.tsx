@@ -14,6 +14,7 @@ import { DeleteDialog } from "./DeleteDialog";
 import { MergeDialog } from "./MergeDialog";
 import { CountConfirmDialog } from "./CountConfirmDialog";
 import { StatusLog } from "./StatusLog";
+import { SearchBar } from "./SearchBar";
 import { sanitizeError } from "../utils/sanitizeError";
 
 type DialogState =
@@ -52,6 +53,7 @@ export const TagManagerApp: React.FC = () => {
   const [logEntries, setLogEntries] = useState<LogEntry[]>(_initialLog);
   const [alphaFilter, setAlphaFilter] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
   const [projectName, setProjectName] = useState<string>("");
   const logIdRef = useRef(_initialLogId);
   const tagsRef = useRef<TagItem[]>([]);
@@ -249,16 +251,27 @@ export const TagManagerApp: React.FC = () => {
     setCurrentPage(0);
   };
 
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(0);
+  };
+
   // --- Render ---
 
+  const searchFiltered = searchQuery.trim()
+    ? tags.filter((t) =>
+        t.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+      )
+    : tags;
+
   const filteredTags = alphaFilter
-    ? tags.filter((t) => {
+    ? searchFiltered.filter((t) => {
         const ch = t.name[0]?.toUpperCase();
         return alphaFilter === "#"
           ? !(ch >= "A" && ch <= "Z")
           : ch === alphaFilter;
       })
-    : tags;
+    : searchFiltered;
 
   const totalPages = Math.max(1, Math.ceil(filteredTags.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, totalPages - 1);
@@ -310,8 +323,9 @@ export const TagManagerApp: React.FC = () => {
         )}
         <Card>
           <div style={{ display: "flex", flexDirection: "column" }}>
+            <SearchBar value={searchQuery} onChange={handleSearchChange} />
             <AlphaNav
-              tags={tags}
+              tags={searchFiltered}
               activeFilter={alphaFilter}
               onFilter={handleAlphaFilter}
             />
