@@ -27,6 +27,7 @@ interface TagTableProps {
 // so they are not recreated on every render (prevents ADO Table column flicker).
 const colWidthSelect = new ObservableValue(48);
 const colWidthName = new ObservableValue(300);
+const EMPTY_NAMES: string[] = [];
 
 export const TagTable: React.FC<TagTableProps> = ({
   tags,
@@ -34,8 +35,10 @@ export const TagTable: React.FC<TagTableProps> = ({
   onToggle,
   onToggleAll,
   onRename,
-  existingNames = [],
+  existingNames: existingNamesProp,
 }) => {
+  const existingNames = existingNamesProp ?? EMPTY_NAMES;
+
   if (tags.length === 0) {
     return (
       <ZeroData

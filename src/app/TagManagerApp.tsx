@@ -1,5 +1,5 @@
 // src/app/TagManagerApp.tsx
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Card } from "azure-devops-ui/Card";
 import { Header, TitleSize } from "azure-devops-ui/Header";
 import { IHeaderCommandBarItem } from "azure-devops-ui/HeaderCommandBar";
@@ -263,6 +263,7 @@ export const TagManagerApp: React.FC = () => {
         t.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
       )
     : tags;
+  const existingNames = useMemo(() => tags.map((t) => t.name), [tags]);
 
   const filteredTags = alphaFilter
     ? searchFiltered.filter((t) => {
@@ -340,7 +341,7 @@ export const TagManagerApp: React.FC = () => {
                 onToggle={handleToggle}
                 onToggleAll={handleToggleAll}
                 onRename={handleRename}
-                existingNames={tags.map((t) => t.name)}
+                existingNames={existingNames}
               />
             )}
             {!loading && totalPages > 1 && (

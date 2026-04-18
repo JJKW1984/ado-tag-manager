@@ -21,4 +21,19 @@ describe("sanitizeError", () => {
     const result = sanitizeError(new Error("first line\nat: somewhere"));
     expect(result).toBe("first line");
   });
+
+  it("redacts URLs", () => {
+    const result = sanitizeError(new Error("request failed at https://contoso.example/api?token=abc123"));
+    expect(result).toBe("request failed at [redacted-url]");
+  });
+
+  it("redacts bearer tokens", () => {
+    const result = sanitizeError(new Error("Unauthorized: Bearer abc123.xyz"));
+    expect(result).toBe("Unauthorized: Bearer [redacted]");
+  });
+
+  it("redacts token-like key/value pairs", () => {
+    const result = sanitizeError(new Error("permission denied token=abc123 authorization:secret"));
+    expect(result).toBe("permission denied token=[redacted] authorization=[redacted]");
+  });
 });

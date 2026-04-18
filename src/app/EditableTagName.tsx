@@ -57,6 +57,11 @@ export const EditableTagName: React.FC<EditableTagNameProps> = ({
       committedRef.current = false;
     });
   };
+  const startEditing = () => {
+    setDraft(name);
+    setError(null);
+    setEditing(true);
+  };
 
   if (editing) {
     return (
@@ -107,15 +112,28 @@ export const EditableTagName: React.FC<EditableTagNameProps> = ({
   }
 
   return (
-    <span
-      onDoubleClick={() => {
-        setDraft(name);
-        setError(null);
-        setEditing(true);
+    <button
+      type="button"
+      onDoubleClick={startEditing}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === "F2") {
+          e.preventDefault();
+          startEditing();
+        }
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={{ display: "inline-flex", alignItems: "center", gap: "6px", cursor: "default" }}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "6px",
+        cursor: "pointer",
+        border: "none",
+        background: "transparent",
+        color: "inherit",
+        font: "inherit",
+        padding: 0,
+      }}
     >
       {name}
       {hovered && (
@@ -127,6 +145,6 @@ export const EditableTagName: React.FC<EditableTagNameProps> = ({
           ✎
         </span>
       )}
-    </span>
+    </button>
   );
 };

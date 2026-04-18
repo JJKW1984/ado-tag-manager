@@ -35,7 +35,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         fontSize: "13px",
         color: "var(--text-primary-color, #1e1e1e)",
         background: "var(--palette-neutral-0, #fff)",
-        outline: "none",
       }}
     />
     {value && (

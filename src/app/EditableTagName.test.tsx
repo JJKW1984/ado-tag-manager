@@ -53,6 +53,22 @@ describe("EditableTagName — entering edit mode", () => {
     await user.dblClick(screen.getByText("old-tag"));
     expect(screen.getByRole("textbox", { name: "Edit tag name" })).toHaveValue("old-tag");
   });
+
+  it("enters edit mode with keyboard Enter when focused", async () => {
+    const user = userEvent.setup();
+    render(<EditableTagName {...defaultProps} />);
+    await user.tab();
+    await user.keyboard("[Enter]");
+    expect(screen.getByRole("textbox", { name: "Edit tag name" })).toBeInTheDocument();
+  });
+
+  it("enters edit mode with keyboard F2 when focused", async () => {
+    const user = userEvent.setup();
+    render(<EditableTagName {...defaultProps} />);
+    await user.tab();
+    await user.keyboard("{F2}");
+    expect(screen.getByRole("textbox", { name: "Edit tag name" })).toBeInTheDocument();
+  });
 });
 
 describe("EditableTagName — committing a rename", () => {
