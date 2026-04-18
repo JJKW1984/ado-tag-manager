@@ -18,6 +18,7 @@ export const EditableTagName: React.FC<EditableTagNameProps> = ({
   const [draft, setDraft] = useState(name);
   const [error, setError] = useState<string | null>(null);
   const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
   // Prevents blur from triggering a second commit after Enter already committed.
   const committedRef = useRef(false);
 
@@ -114,13 +115,17 @@ export const EditableTagName: React.FC<EditableTagNameProps> = ({
   return (
     <button
       type="button"
+      aria-label={`Rename tag ${name}`}
+      title="Double-click, Enter, or F2 to rename"
       onDoubleClick={startEditing}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === "F2") {
+        if (e.key === "Enter" || e.key === "F2" || e.key === " ") {
           e.preventDefault();
           startEditing();
         }
       }}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -133,6 +138,11 @@ export const EditableTagName: React.FC<EditableTagNameProps> = ({
         color: "inherit",
         font: "inherit",
         padding: 0,
+        borderRadius: "2px",
+        outline: focused
+          ? "2px solid var(--communication-foreground, #0078d4)"
+          : "none",
+        outlineOffset: "2px",
       }}
     >
       {name}

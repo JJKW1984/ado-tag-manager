@@ -27,6 +27,21 @@ describe("sanitizeError", () => {
     expect(result).toBe("request failed at [redacted-url]");
   });
 
+  it("redacts credentialed URLs", () => {
+    const result = sanitizeError(new Error("failed: https://user:password@contoso.example/path"));
+    expect(result).toBe("failed: [redacted-url]");
+  });
+
+  it("redacts URLs wrapped with angle brackets or quotes", () => {
+    const result = sanitizeError(new Error("failed at <\"https://contoso.example/path\">"));
+    expect(result).toBe("failed at <\"[redacted-url]\">");
+  });
+
+  it("redacts URLs followed by closing brackets", () => {
+    const result = sanitizeError(new Error("failed at [https://contoso.example/path]"));
+    expect(result).toBe("failed at [[redacted-url]]");
+  });
+
   it("redacts bearer tokens", () => {
     const result = sanitizeError(new Error("Unauthorized: Bearer abc123.xyz"));
     expect(result).toBe("Unauthorized: Bearer [redacted]");

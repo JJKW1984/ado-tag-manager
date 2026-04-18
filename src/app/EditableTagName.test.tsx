@@ -37,6 +37,15 @@ describe("EditableTagName — display mode", () => {
     render(<EditableTagName {...defaultProps} />);
     expect(screen.queryByTitle("Rename")).not.toBeInTheDocument();
   });
+
+  it("shows a visible focus outline when focused", async () => {
+    const user = userEvent.setup();
+    render(<EditableTagName {...defaultProps} />);
+    await user.tab();
+    expect(screen.getByRole("button", { name: /Rename tag old-tag/i })).toHaveStyle(
+      "outline: 2px solid var(--communication-foreground, #0078d4)"
+    );
+  });
 });
 
 describe("EditableTagName — entering edit mode", () => {
@@ -67,6 +76,14 @@ describe("EditableTagName — entering edit mode", () => {
     render(<EditableTagName {...defaultProps} />);
     await user.tab();
     await user.keyboard("{F2}");
+    expect(screen.getByRole("textbox", { name: "Edit tag name" })).toBeInTheDocument();
+  });
+
+  it("enters edit mode with keyboard Space when focused", async () => {
+    const user = userEvent.setup();
+    render(<EditableTagName {...defaultProps} />);
+    await user.tab();
+    await user.keyboard(" ");
     expect(screen.getByRole("textbox", { name: "Edit tag name" })).toBeInTheDocument();
   });
 });
