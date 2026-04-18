@@ -14,14 +14,22 @@ import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
 import { TagItem } from "../types";
 import { EditableTagName } from "./EditableTagName";
 
-interface TagTableProps {
+type TagTableBaseProps = {
   tags: TagItem[];
   selectedIds: Set<string>;
   onToggle: (id: string) => void;
   onToggleAll: (select: boolean) => void;
-  onRename?: (tagId: string, newName: string) => void | Promise<void>;
-  existingNames?: string[];
-}
+};
+
+type TagTableProps =
+  | (TagTableBaseProps & {
+      onRename: (tagId: string, newName: string) => void | Promise<void>;
+      existingNames: string[];
+    })
+  | (TagTableBaseProps & {
+      onRename?: undefined;
+      existingNames?: string[];
+    });
 
 // Column widths are stable ObservableValues — defined outside the component
 // so they are not recreated on every render (prevents ADO Table column flicker).
@@ -29,15 +37,9 @@ const colWidthSelect = new ObservableValue(48);
 const colWidthName = new ObservableValue(300);
 const EMPTY_NAMES: string[] = [];
 
-export const TagTable: React.FC<TagTableProps> = ({
-  tags,
-  selectedIds,
-  onToggle,
-  onToggleAll,
-  onRename,
-  existingNames: existingNamesProp,
-}) => {
-  const existingNames = existingNamesProp ?? EMPTY_NAMES;
+export const TagTable: React.FC<TagTableProps> = (props) => {
+  const { tags, selectedIds, onToggle, onToggleAll, onRename } = props;
+  const existingNames = onRename ? props.existingNames : EMPTY_NAMES;
 
   if (tags.length === 0) {
     return (

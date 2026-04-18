@@ -89,6 +89,26 @@ describe("TagManagerApp — rename flow", () => {
       ).toBeInTheDocument();
     });
   });
+
+  it("keeps tags alphabetically ordered after a successful rename", async () => {
+    mockTagService.renameTagById.mockResolvedValue({ id: "1", name: "zeta", url: "u" });
+    const user = userEvent.setup();
+    render(<TagManagerApp />);
+
+    await waitFor(() => expect(screen.getByText("alpha")).toBeInTheDocument());
+
+    await user.dblClick(screen.getByText("alpha"));
+    const input = screen.getByRole("textbox", { name: "Edit tag name" });
+    await user.clear(input);
+    await user.type(input, "zeta");
+    await user.keyboard("[Enter]");
+
+    await waitFor(() => {
+      const beta = screen.getByText("beta");
+      const zeta = screen.getByText("zeta");
+      expect(beta.compareDocumentPosition(zeta) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+  });
 });
 
 describe("TagManagerApp — rename failure", () => {

@@ -19,11 +19,12 @@ export const EditableTagName: React.FC<EditableTagNameProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
-  // Prevents blur from triggering a second commit after Enter already committed.
-  const committedRef = useRef(false);
+  const isSavingRef = useRef(false);
+  // Prevents blur from triggering a second commit after keyboard commit/cancel.
+  const suppressBlurCommitRef = useRef(false);
 
   const commit = async () => {
-    if (committedRef.current) return;
+    if (isSavingRef.current) return;
     const validation = validateTagName(draft);
     if (!validation.valid) {
       setError(validation.reason ?? "Invalid tag name.");
@@ -36,29 +37,31 @@ export const EditableTagName: React.FC<EditableTagNameProps> = ({
       setError("A tag with this name already exists — use Merge instead.");
       return;
     }
-    committedRef.current = true;
     setEditing(false);
     setError(null);
+    isSavingRef.current = true;
     try {
       await onRename(draft.trim());
     } catch {
       onCancel();
     } finally {
-      committedRef.current = false;
+      isSavingRef.current = false;
     }
   };
 
   const cancel = () => {
-    committedRef.current = true;
+    suppressBlurCommitRef.current = true;
     setEditing(false);
     setDraft(name);
     setError(null);
     onCancel();
     Promise.resolve().then(() => {
-      committedRef.current = false;
+      suppressBlurCommitRef.current = false;
     });
   };
   const startEditing = () => {
+    if (isSavingRef.current) return;
+    suppressBlurCommitRef.current = false;
     setDraft(name);
     setError(null);
     setEditing(true);
@@ -78,13 +81,23 @@ export const EditableTagName: React.FC<EditableTagNameProps> = ({
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
+              suppressBlurCommitRef.current = true;
               commit();
+              Promise.resolve().then(() => {
+                suppressBlurCommitRef.current = false;
+              });
             } else if (e.key === "Escape") {
               e.preventDefault();
               cancel();
             }
           }}
-          onBlur={commit}
+          onBlur={() => {
+            if (suppressBlurCommitRef.current) {
+              suppressBlurCommitRef.current = false;
+              return;
+            }
+            commit();
+          }}
           style={{
             width: "100%",
             boxSizing: "border-box",

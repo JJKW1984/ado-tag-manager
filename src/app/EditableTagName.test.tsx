@@ -118,6 +118,35 @@ describe("EditableTagName — committing a rename", () => {
     await user.tab();
     expect(defaultProps.onRename).toHaveBeenCalledWith("blurred-name");
   });
+
+  it("disables re-entry while rename is in flight", async () => {
+    let resolveRename: (() => void) | undefined;
+    const onRename = jest.fn(
+      () => new Promise<void>((resolve) => { resolveRename = resolve; })
+    );
+    const user = userEvent.setup();
+    render(
+      <EditableTagName
+        name="old-tag"
+        onRename={onRename}
+        onCancel={jest.fn()}
+        existingNames={[]}
+      />
+    );
+
+    await user.dblClick(screen.getByText("old-tag"));
+    const input = screen.getByRole("textbox", { name: "Edit tag name" });
+    await user.clear(input);
+    await user.type(input, "new-name");
+    await user.keyboard("[Enter]");
+
+    const trigger = screen.getByRole("button", { name: /Rename tag old-tag/i });
+    await user.dblClick(trigger);
+    expect(screen.queryByRole("textbox", { name: "Edit tag name" })).not.toBeInTheDocument();
+
+    resolveRename?.();
+    await waitFor(() => expect(onRename).toHaveBeenCalledTimes(1));
+  });
 });
 
 describe("EditableTagName — cancelling a rename", () => {

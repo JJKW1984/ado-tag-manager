@@ -103,7 +103,9 @@ export const TagManagerApp: React.FC = () => {
     try {
       const updated = await tagService.renameTagById(tagId, newName);
       setTags((prev) =>
-        prev.map((t) => (t.id === tagId ? { ...t, name: updated.name } : t))
+        prev
+          .map((t) => (t.id === tagId ? { ...t, name: updated.name } : t))
+          .sort((a, b) => a.name.localeCompare(b.name))
       );
       updateLog(logId, `${proj}✓ Renamed "${original}" → "${updated.name}"`, "success");
     } catch (e) {
