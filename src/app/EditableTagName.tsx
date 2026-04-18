@@ -88,7 +88,6 @@ export const EditableTagName: React.FC<EditableTagNameProps> = ({
             borderRadius: "2px",
             background: "var(--callout-background-color, #fff)",
             color: "var(--text-primary-color, #1e1e1e)",
-            outline: "none",
           }}
         />
         {error && (
