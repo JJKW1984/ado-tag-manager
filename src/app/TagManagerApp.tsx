@@ -16,6 +16,7 @@ import { DeleteDialog } from "./DeleteDialog";
 import { MergeDialog } from "./MergeDialog";
 import { CountConfirmDialog } from "./CountConfirmDialog";
 import { StatusLog } from "./StatusLog";
+import "./tag-manager.css";
 
 type DialogState =
   | { type: "delete"; tags: TagItem[] }
@@ -294,14 +295,14 @@ export const TagManagerApp: React.FC = () => {
           </MessageCard>
         )}
         <Card>
-          <div style={{ display: "flex", flexDirection: "column" }}>
+          <div className="tm-card-content">
             <AlphaNav
               tags={tags}
               activeFilter={alphaFilter}
               onFilter={handleAlphaFilter}
             />
             {loading ? (
-              <div style={{ display: "flex", justifyContent: "center", padding: "32px" }}>
+              <div className="tm-spinner-wrapper">
                 <Spinner size={SpinnerSize.large} label="Loading tags…" />
               </div>
             ) : (
@@ -313,19 +314,7 @@ export const TagManagerApp: React.FC = () => {
               />
             )}
             {!loading && totalPages > 1 && (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "flex-end",
-                  gap: "12px",
-                  padding: "8px 4px 4px",
-                  borderTop: "1px solid var(--palette-neutral-10, #e0e0e0)",
-                  marginTop: "4px",
-                  fontSize: "13px",
-                  color: "var(--palette-neutral-60, #555)",
-                }}
-              >
+              <div className="tm-pagination">
                 <span>
                   Page {safePage + 1} of {totalPages}
                   {" "}({filteredTags.length} tag{filteredTags.length !== 1 ? "s" : ""})
