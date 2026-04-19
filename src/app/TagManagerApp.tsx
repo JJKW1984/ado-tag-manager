@@ -1,11 +1,13 @@
 // src/app/TagManagerApp.tsx
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Card } from "azure-devops-ui/Card";
 import { Header, TitleSize } from "azure-devops-ui/Header";
 import { IHeaderCommandBarItem } from "azure-devops-ui/HeaderCommandBar";
 import { Page } from "azure-devops-ui/Page";
 import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
 import { MessageCard, MessageCardSeverity } from "azure-devops-ui/MessageCard";
+import { Button } from "azure-devops-ui/Button";
+import { ButtonGroup } from "azure-devops-ui/ButtonGroup";
 import { TagService } from "../services/TagService";
 import { TagItem, LogEntry } from "../types";
 import { TagTable } from "./TagTable";
@@ -14,6 +16,12 @@ import { DeleteDialog } from "./DeleteDialog";
 import { MergeDialog } from "./MergeDialog";
 import { CountConfirmDialog } from "./CountConfirmDialog";
 import { StatusLog } from "./StatusLog";
+<<<<<<< HEAD
+import "./tag-manager.css";
+=======
+import { SearchBar } from "./SearchBar";
+import { sanitizeError } from "../utils/sanitizeError";
+>>>>>>> origin/dev
 
 type DialogState =
   | { type: "delete"; tags: TagItem[] }
@@ -51,8 +59,10 @@ export const TagManagerApp: React.FC = () => {
   const [logEntries, setLogEntries] = useState<LogEntry[]>(_initialLog);
   const [alphaFilter, setAlphaFilter] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
   const [projectName, setProjectName] = useState<string>("");
   const logIdRef = useRef(_initialLogId);
+  const tagsRef = useRef<TagItem[]>([]);
 
   // Persist log whenever it changes
   useEffect(() => {
@@ -63,6 +73,10 @@ export const TagManagerApp: React.FC = () => {
       // localStorage unavailable (e.g. private browsing quota) — silently skip
     }
   }, [logEntries]);
+
+  useEffect(() => {
+    tagsRef.current = tags;
+  }, [tags]);
 
   // --- Helpers ---
 
@@ -86,6 +100,24 @@ export const TagManagerApp: React.FC = () => {
       prev.map((t) => (t.id === tagId ? { ...t, count } : t))
     );
   }, []);
+
+  const proj = projectName ? `[${projectName}] ` : "";
+
+  const handleRename = useCallback(async (tagId: string, newName: string) => {
+    const original = tagsRef.current.find((t) => t.id === tagId)?.name ?? tagId;
+    const logId = appendLog(`${proj}Renaming "${original}" → "${newName}"…`, "running");
+    try {
+      const updated = await tagService.renameTagById(tagId, newName);
+      setTags((prev) =>
+        prev
+          .map((t) => (t.id === tagId ? { ...t, name: updated.name } : t))
+          .sort((a, b) => a.name.localeCompare(b.name))
+      );
+      updateLog(logId, `${proj}✓ Renamed "${original}" → "${updated.name}"`, "success");
+    } catch (e) {
+      updateLog(logId, `${proj}✗ Failed to rename "${original}": ${sanitizeError(e)}`, "error");
+    }
+  }, [proj, appendLog, updateLog]);
 
   // --- Data loading ---
 
@@ -144,8 +176,6 @@ export const TagManagerApp: React.FC = () => {
   };
 
   // --- Background jobs ---
-
-  const proj = projectName ? `[${projectName}] ` : "";
 
   const runDeleteJobs = async (tagsToDelete: TagItem[]) => {
     setDialog(null);
@@ -229,16 +259,28 @@ export const TagManagerApp: React.FC = () => {
     setCurrentPage(0);
   };
 
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(0);
+  };
+
   // --- Render ---
 
+  const searchFiltered = searchQuery.trim()
+    ? tags.filter((t) =>
+        t.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+      )
+    : tags;
+  const existingNames = useMemo(() => tags.map((t) => t.name), [tags]);
+
   const filteredTags = alphaFilter
-    ? tags.filter((t) => {
+    ? searchFiltered.filter((t) => {
         const ch = t.name[0]?.toUpperCase();
         return alphaFilter === "#"
           ? !(ch >= "A" && ch <= "Z")
           : ch === alphaFilter;
       })
-    : tags;
+    : searchFiltered;
 
   const totalPages = Math.max(1, Math.ceil(filteredTags.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, totalPages - 1);
@@ -250,6 +292,7 @@ export const TagManagerApp: React.FC = () => {
     {
       id: "delete",
       text: `Delete${sel}`,
+      iconProps: { iconName: "Trash" },
       disabled: n === 0,
       onActivate: handleDeleteClick,
       important: true,
@@ -257,6 +300,7 @@ export const TagManagerApp: React.FC = () => {
     {
       id: "merge",
       text: `Merge${sel}`,
+      iconProps: { iconName: "Merge" },
       disabled: n === 0,
       onActivate: handleMergeClick,
       important: true,
@@ -264,6 +308,7 @@ export const TagManagerApp: React.FC = () => {
     {
       id: "count",
       text: `Count${sel}`,
+      iconProps: { iconName: "NumberSymbol" },
       disabled: n === 0,
       onActivate: handleCountClick,
       important: true,
@@ -281,7 +326,7 @@ export const TagManagerApp: React.FC = () => {
       <div className="page-content">
         {error && (
           <MessageCard
-            className="tag-manager-error"
+            className="tm-error-card"
             severity={MessageCardSeverity.Error}
             onDismiss={() => setError(null)}
           >
@@ -289,14 +334,19 @@ export const TagManagerApp: React.FC = () => {
           </MessageCard>
         )}
         <Card>
+<<<<<<< HEAD
+          <div className="tm-card-content">
+=======
           <div style={{ display: "flex", flexDirection: "column" }}>
+            <SearchBar value={searchQuery} onChange={handleSearchChange} />
+>>>>>>> origin/dev
             <AlphaNav
-              tags={tags}
+              tags={searchFiltered}
               activeFilter={alphaFilter}
               onFilter={handleAlphaFilter}
             />
             {loading ? (
-              <div style={{ display: "flex", justifyContent: "center", padding: "32px" }}>
+              <div className="tm-spinner-wrapper">
                 <Spinner size={SpinnerSize.large} label="Loading tags…" />
               </div>
             ) : (
@@ -305,49 +355,32 @@ export const TagManagerApp: React.FC = () => {
                 selectedIds={selectedIds}
                 onToggle={handleToggle}
                 onToggleAll={handleToggleAll}
+                onRename={handleRename}
+                existingNames={existingNames}
               />
             )}
             {!loading && totalPages > 1 && (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "flex-end",
-                  gap: "12px",
-                  padding: "8px 4px 4px",
-                  borderTop: "1px solid var(--palette-neutral-10, #e0e0e0)",
-                  marginTop: "4px",
-                  fontSize: "13px",
-                  color: "var(--palette-neutral-60, #555)",
-                }}
-              >
-                <button
-                  disabled={safePage === 0}
-                  onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-                  style={{
-                    border: "none", background: "none", cursor: safePage === 0 ? "default" : "pointer",
-                    color: safePage === 0 ? "var(--palette-neutral-20, #ccc)" : "var(--communication-foreground, #0078d4)",
-                    fontSize: "13px", padding: "2px 4px",
-                  }}
-                >
-                  ← Previous
-                </button>
+              <div className="tm-pagination">
                 <span>
                   Page {safePage + 1} of {totalPages}
                   {" "}({filteredTags.length} tag{filteredTags.length !== 1 ? "s" : ""})
                 </span>
-                <button
-                  disabled={safePage >= totalPages - 1}
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
-                  style={{
-                    border: "none", background: "none",
-                    cursor: safePage >= totalPages - 1 ? "default" : "pointer",
-                    color: safePage >= totalPages - 1 ? "var(--palette-neutral-20, #ccc)" : "var(--communication-foreground, #0078d4)",
-                    fontSize: "13px", padding: "2px 4px",
-                  }}
-                >
-                  Next →
-                </button>
+                <ButtonGroup>
+                  <Button
+                    subtle={true}
+                    text="Previous"
+                    iconProps={{ iconName: "ChevronLeft" }}
+                    disabled={safePage === 0}
+                    onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                  />
+                  <Button
+                    subtle={true}
+                    text="Next"
+                    iconProps={{ iconName: "ChevronRight" }}
+                    disabled={safePage >= totalPages - 1}
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+                  />
+                </ButtonGroup>
               </div>
             )}
           </div>

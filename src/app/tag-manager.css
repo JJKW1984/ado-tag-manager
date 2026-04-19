@@ -1,0 +1,79 @@
+/* ============================================================
+   Tag Manager — component styles
+   All ADO CSS tokens (var(--palette-*)) are from azure-devops-ui.
+   ============================================================ */
+
+/* Pagination row */
+.tm-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 8px 4px 4px;
+  border-top: 1px solid var(--palette-neutral-10, #e0e0e0);
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--palette-neutral-60, #555);
+}
+
+/* Loading spinner centering */
+.tm-spinner-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 32px;
+}
+
+/* Card inner flex-column layout */
+.tm-card-content {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Activity log — container */
+.tm-status-log {
+  border-top: 1px solid var(--palette-neutral-10, #eee);
+  margin-top: 16px;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+/* Activity log — collapse/expand header row */
+.tm-status-log__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  cursor: pointer;
+  user-select: none;
+  color: var(--palette-neutral-60, #555);
+}
+
+/* Activity log — scrollable body */
+.tm-status-log__body {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+/* Activity log — single log entry row */
+.tm-status-log__entry {
+  display: flex;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+/* Activity log — timestamp column */
+.tm-status-log__timestamp {
+  min-width: 60px;
+  color: var(--palette-neutral-30, #aaa);
+}
+
+/* Activity log — status icon column */
+.tm-status-log__icon {
+  min-width: 16px;
+}
+
+/* Error message card */
+.tm-error-card {
+  /* MessageCard handles its own layout — reserved for overrides */
+}

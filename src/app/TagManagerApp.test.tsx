@@ -81,4 +81,23 @@ describe("TagManagerApp", () => {
     expect(screen.getByText("Count Work Items")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Count 11 tags" })).toBeInTheDocument();
   });
+
+  it("renders ADO pagination buttons when there are more than 25 tags", async () => {
+    mockTagService.getAllTags.mockResolvedValue(
+      Array.from({ length: 30 }, (_v, i) => ({
+        id: `${i + 1}`,
+        name: `tag-${String.fromCharCode(65 + (i % 26))}-${i + 1}`,
+        url: "u",
+      }))
+    );
+
+    render(<TagManagerApp />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/tag-A-1/)).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Next" })).not.toBeDisabled();
+  });
 });

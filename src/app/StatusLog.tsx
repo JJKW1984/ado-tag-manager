@@ -1,4 +1,3 @@
-// src/app/StatusLog.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { LogEntry } from "../types";
 
@@ -33,24 +32,9 @@ export const StatusLog: React.FC<StatusLogProps> = ({ entries }) => {
   if (entries.length === 0) return null;
 
   return (
-    <div
-      style={{
-        borderTop: "1px solid var(--palette-neutral-10, #eee)",
-        marginTop: "16px",
-        fontFamily: "monospace",
-        fontSize: "12px",
-      }}
-    >
+    <div className="tm-status-log">
       <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-          padding: "6px 0",
-          cursor: "pointer",
-          userSelect: "none",
-          color: "var(--palette-neutral-60, #555)",
-        }}
+        className="tm-status-log__header"
         onClick={() => setCollapsed((c) => !c)}
       >
         <span>{collapsed ? "▶" : "▼"}</span>
@@ -60,27 +44,17 @@ export const StatusLog: React.FC<StatusLogProps> = ({ entries }) => {
       </div>
 
       {!collapsed && (
-        <div
-          style={{
-            maxHeight: "200px",
-            overflowY: "auto",
-            padding: "4px 0",
-          }}
-        >
+        <div className="tm-status-log__body">
           {entries.map((e) => (
             <div
               key={e.id}
-              style={{
-                display: "flex",
-                gap: "8px",
-                padding: "2px 0",
-                color: STATUS_COLORS[e.status],
-              }}
+              className="tm-status-log__entry"
+              style={{ color: STATUS_COLORS[e.status] }}
             >
-              <span style={{ minWidth: "60px", color: "var(--palette-neutral-30, #aaa)" }}>
+              <span className="tm-status-log__timestamp">
                 {e.timestamp.toLocaleTimeString()}
               </span>
-              <span style={{ minWidth: "16px" }}>{STATUS_ICONS[e.status]}</span>
+              <span className="tm-status-log__icon">{STATUS_ICONS[e.status]}</span>
               <span>{e.message}</span>
             </div>
           ))}
