@@ -72,3 +72,8 @@
 .tm-status-log__icon {
   min-width: 16px;
 }
+
+/* Error message card */
+.tm-error-card {
+  /* MessageCard handles its own layout — reserved for overrides */
+}

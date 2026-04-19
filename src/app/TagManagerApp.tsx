@@ -287,7 +287,7 @@ export const TagManagerApp: React.FC = () => {
       <div className="page-content">
         {error && (
           <MessageCard
-            className="tag-manager-error"
+            className="tm-error-card"
             severity={MessageCardSeverity.Error}
             onDismiss={() => setError(null)}
           >

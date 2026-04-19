@@ -224,6 +224,7 @@ export const TabBar: React.FC<{
 export const Tab: React.FC<{
   id: string;
   name?: string;
+  disabled?: boolean;
 }> = ({ id, name }) => {
   const onTabChanged = React.useContext(TabBarContext);
   return (
