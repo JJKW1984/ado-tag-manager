@@ -1,0 +1,79 @@
+<h2>AlphaNav: Which style fits best?</h2>
+<p class="subtitle">All three use ADO UI components. Pick the one that feels most at home in Azure DevOps.</p>
+
+<div class="cards">
+
+  <!-- Option A: Tab Bar style -->
+  <div class="card" data-choice="tabs" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px; background:#fff; border-bottom:1px solid #eee;">
+      <div style="font-size:11px; color:#888; font-weight:600; margin-bottom:10px; text-transform:uppercase; letter-spacing:.5px;">Option A — Tab Strip (ADO Tab component)</div>
+      <div style="display:flex; border-bottom:2px solid #e0e0e0; overflow:hidden;">
+        <div style="padding:6px 10px; font-size:12px; font-weight:600; color:#0078d4; border-bottom:2px solid #0078d4; margin-bottom:-2px; white-space:nowrap;">All</div>
+        <div style="padding:6px 8px; font-size:12px; color:#555; white-space:nowrap;">#</div>
+        <div style="padding:6px 8px; font-size:12px; color:#333; font-weight:500; white-space:nowrap;">A</div>
+        <div style="padding:6px 8px; font-size:12px; color:#333; font-weight:500; white-space:nowrap;">B</div>
+        <div style="padding:6px 8px; font-size:12px; color:#ccc; white-space:nowrap;">C</div>
+        <div style="padding:6px 8px; font-size:12px; color:#333; font-weight:500; white-space:nowrap;">D</div>
+        <div style="padding:6px 8px; font-size:12px; color:#ccc; white-space:nowrap;">E</div>
+        <div style="padding:6px 8px; font-size:12px; color:#ccc; white-space:nowrap;">F</div>
+        <div style="padding:6px 8px; font-size:12px; color:#333; font-weight:500; white-space:nowrap;">G</div>
+        <div style="padding:6px 8px; font-size:12px; color:#888; white-space:nowrap;">…</div>
+      </div>
+      <div style="font-size:11px; color:#aaa; margin-top:6px;">Horizontally scrollable — mirrors ADO's own navigation tabs</div>
+    </div>
+    <div class="card-body">
+      <h3>Tab Strip</h3>
+      <p>Uses ADO's <code>Tab</code> component. Active letter gets the blue underline — same pattern used in Boards, Repos, Pipelines. Most "native" feel.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Filter Pill chips -->
+  <div class="card" data-choice="pills" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px; background:#fff; border-bottom:1px solid #eee;">
+      <div style="font-size:11px; color:#888; font-weight:600; margin-bottom:10px; text-transform:uppercase; letter-spacing:.5px;">Option B — Filter Chips (ADO Pill component)</div>
+      <div style="display:flex; flex-wrap:wrap; gap:4px;">
+        <span style="padding:3px 10px; background:#0078d4; color:#fff; border-radius:10px; font-size:12px; font-weight:600;">All</span>
+        <span style="padding:3px 8px; background:#f0f0f0; color:#ccc; border-radius:10px; font-size:12px;">#</span>
+        <span style="padding:3px 8px; background:#f0f0f0; color:#333; border-radius:10px; font-size:12px;">A</span>
+        <span style="padding:3px 8px; background:#f0f0f0; color:#333; border-radius:10px; font-size:12px;">B</span>
+        <span style="padding:3px 8px; background:#f0f0f0; color:#ccc; border-radius:10px; font-size:12px;">C</span>
+        <span style="padding:3px 8px; background:#f0f0f0; color:#333; border-radius:10px; font-size:12px;">D</span>
+        <span style="padding:3px 8px; background:#f0f0f0; color:#ccc; border-radius:10px; font-size:12px;">E</span>
+        <span style="padding:3px 8px; background:#f0f0f0; color:#333; border-radius:10px; font-size:12px;">F</span>
+        <span style="padding:3px 8px; background:#f0f0f0; color:#333; border-radius:10px; font-size:12px;">G</span>
+        <span style="padding:3px 6px; background:#f0f0f0; color:#888; border-radius:10px; font-size:12px;">…</span>
+      </div>
+      <div style="font-size:11px; color:#aaa; margin-top:6px;">Wraps naturally — no scroll needed</div>
+    </div>
+    <div class="card-body">
+      <h3>Filter Pills</h3>
+      <p>Uses ADO's <code>Pill</code> component. Solid fill for active, ghost for available, muted for empty. Used in ADO's tag/label filters. Wraps to multiple rows if needed.</p>
+    </div>
+  </div>
+
+  <!-- Option C: ADO Button (subtle) -->
+  <div class="card" data-choice="buttons" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px; background:#fff; border-bottom:1px solid #eee;">
+      <div style="font-size:11px; color:#888; font-weight:600; margin-bottom:10px; text-transform:uppercase; letter-spacing:.5px;">Option C — Subtle Buttons (ADO Button subtle appearance)</div>
+      <div style="display:flex; flex-wrap:wrap; gap:2px; align-items:center;">
+        <span style="padding:4px 10px; background:#deecf9; color:#0078d4; border-radius:2px; font-size:12px; font-weight:600; border:1px solid #0078d4;">All</span>
+        <span style="padding:4px 6px; background:transparent; color:#ccc; border-radius:2px; font-size:12px; border:1px solid transparent;">#</span>
+        <span style="padding:4px 6px; background:transparent; color:#333; border-radius:2px; font-size:12px; border:1px solid transparent; cursor:pointer;">A</span>
+        <span style="padding:4px 6px; background:transparent; color:#333; border-radius:2px; font-size:12px; border:1px solid transparent; cursor:pointer;">B</span>
+        <span style="padding:4px 6px; background:transparent; color:#ccc; border-radius:2px; font-size:12px; border:1px solid transparent;">C</span>
+        <span style="padding:4px 6px; background:transparent; color:#333; border-radius:2px; font-size:12px; border:1px solid transparent; cursor:pointer;">D</span>
+        <span style="padding:4px 6px; background:transparent; color:#ccc; border-radius:2px; font-size:12px; border:1px solid transparent;">E</span>
+        <span style="padding:4px 6px; background:transparent; color:#333; border-radius:2px; font-size:12px; border:1px solid transparent; cursor:pointer;">F</span>
+        <span style="padding:4px 6px; background:#f5f5f5; color:#888; border-radius:2px; font-size:12px; border:1px solid transparent;">…</span>
+      </div>
+      <div style="font-size:11px; color:#aaa; margin-top:6px;">Same shape as current but uses ADO Button tokens — minimal change, big consistency win</div>
+    </div>
+    <div class="card-body">
+      <h3>Subtle Buttons</h3>
+      <p>Uses ADO <code>Button</code> with <code>subtle</code> appearance. Active state uses the selected/filled variant. Least disruptive — closest to current layout but fully component-based.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px;">Click a card to select, then confirm in the terminal.</p>

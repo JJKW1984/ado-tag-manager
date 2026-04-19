@@ -1,0 +1,152 @@
+<h2>Proposed Design — Tag Manager Hub</h2>
+<p class="subtitle">Four targeted changes. Review each section and confirm in the terminal.</p>
+
+<!-- Section 1: AlphaNav -->
+<div class="section">
+  <div class="label">A — AlphaNav: TabBar + Tab (TabSize.Compact)</div>
+  <div class="mockup">
+    <div class="mockup-header">AlphaNav — Before vs After</div>
+    <div class="mockup-body">
+      <div class="split" style="gap:24px;">
+        <div style="flex:1;">
+          <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Before</div>
+          <div style="display:flex;flex-wrap:wrap;padding:6px 0 8px;border-bottom:1px solid #e0e0e0;">
+            <span style="margin-right:8px;color:#0078d4;font-weight:700;text-decoration:underline;font-size:12px;cursor:pointer;">All</span>
+            <span style="margin-right:2px;color:#ccc;font-size:12px;">#</span>
+            <span style="margin-right:2px;color:#1e1e1e;font-size:12px;">A</span>
+            <span style="margin-right:2px;color:#1e1e1e;font-size:12px;">B</span>
+            <span style="margin-right:2px;color:#ccc;font-size:12px;">C</span>
+            <span style="margin-right:2px;color:#1e1e1e;font-size:12px;">D</span>
+            <span style="margin-right:2px;color:#ccc;font-size:12px;">E</span>
+            <span style="margin-right:2px;color:#1e1e1e;font-size:12px;">F</span>
+            <span style="color:#888;font-size:12px;">…Z</span>
+          </div>
+          <div style="font-size:11px;color:#c4314b;margin-top:4px;">✗ Raw &lt;button&gt; elements, inline styles, underline-only active state</div>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">After</div>
+          <!-- ADO TabBar simulation -->
+          <div style="display:flex;border-bottom:1px solid #e0e0e0;overflow-x:auto;">
+            <div style="padding:6px 12px;font-size:13px;font-weight:600;color:#0078d4;border-bottom:2px solid #0078d4;margin-bottom:-1px;white-space:nowrap;cursor:pointer;">All</div>
+            <div style="padding:6px 10px;font-size:13px;color:#ccc;white-space:nowrap;">#</div>
+            <div style="padding:6px 10px;font-size:13px;color:#333;white-space:nowrap;cursor:pointer;">A</div>
+            <div style="padding:6px 10px;font-size:13px;color:#333;white-space:nowrap;cursor:pointer;">B</div>
+            <div style="padding:6px 10px;font-size:13px;color:#ccc;white-space:nowrap;">C</div>
+            <div style="padding:6px 10px;font-size:13px;color:#333;white-space:nowrap;cursor:pointer;">D</div>
+            <div style="padding:6px 10px;font-size:13px;color:#ccc;white-space:nowrap;">E</div>
+            <div style="padding:6px 10px;font-size:13px;color:#333;white-space:nowrap;cursor:pointer;">F</div>
+            <div style="padding:6px 10px;font-size:13px;color:#888;white-space:nowrap;">…Z</div>
+          </div>
+          <div style="font-size:11px;color:#107c10;margin-top:4px;">✓ ADO TabBar + Tab (TabSize.Compact) — blue underline active, disabled tabs for missing letters</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:8px;background:#f9f9f9;border-radius:4px;font-size:12px;color:#555;">
+        <strong>Implementation:</strong> Replace <code>AlphaNav.tsx</code> custom buttons with <code>&lt;TabBar selectedTabId&gt;</code> containing 28 <code>&lt;Tab&gt;</code> items. Disabled tabs render for letters with no tags. State stays in <code>TagManagerApp</code> — only the presentational component changes.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Section 2: Pagination -->
+<div class="section">
+  <div class="label">B — Pagination: ADO Button (subtle) + ButtonGroup</div>
+  <div class="mockup">
+    <div class="mockup-header">Pagination — Before vs After</div>
+    <div class="mockup-body">
+      <div class="split" style="gap:24px;">
+        <div style="flex:1;">
+          <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Before</div>
+          <div style="display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:8px 4px;border-top:1px solid #e0e0e0;font-size:13px;">
+            <span style="color:#0078d4;cursor:pointer;">← Previous</span>
+            <span style="color:#555;">Page 2 of 8 (187 tags)</span>
+            <span style="color:#0078d4;cursor:pointer;">Next →</span>
+          </div>
+          <div style="font-size:11px;color:#c4314b;margin-top:4px;">✗ Raw &lt;button&gt; with inline styles — not ADO components</div>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">After</div>
+          <div style="display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:8px 4px;border-top:1px solid #e0e0e0;">
+            <span style="color:#555;font-size:13px;">Page 2 of 8 <span style="color:#888;">(187 tags)</span></span>
+            <!-- ButtonGroup simulation -->
+            <div style="display:flex;border:1px solid #e0e0e0;border-radius:2px;overflow:hidden;">
+              <div style="padding:5px 12px;font-size:12px;color:#0078d4;cursor:pointer;border-right:1px solid #e0e0e0;display:flex;align-items:center;gap:4px;">
+                <span style="font-size:10px;">◀</span> Previous
+              </div>
+              <div style="padding:5px 12px;font-size:12px;color:#0078d4;cursor:pointer;display:flex;align-items:center;gap:4px;">
+                Next <span style="font-size:10px;">▶</span>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:#107c10;margin-top:4px;">✓ ADO <code>Button</code> (subtle) inside <code>ButtonGroup</code> — consistent with ADO visual language</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Section 3: Command Bar Icons -->
+<div class="section">
+  <div class="label">C — Command Bar: Add iconProps to Delete / Merge / Count</div>
+  <div class="mockup">
+    <div class="mockup-header">Command Bar — Before vs After</div>
+    <div class="mockup-body">
+      <div class="split" style="gap:24px;">
+        <div style="flex:1;">
+          <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Before</div>
+          <div style="display:flex;gap:8px;">
+            <span style="padding:5px 12px;border:1px solid #ccc;border-radius:2px;font-size:13px;color:#555;">Delete (3)</span>
+            <span style="padding:5px 12px;border:1px solid #ccc;border-radius:2px;font-size:13px;color:#555;">Merge (3)</span>
+            <span style="padding:5px 12px;border:1px solid #ccc;border-radius:2px;font-size:13px;color:#555;">Count (3)</span>
+          </div>
+          <div style="font-size:11px;color:#c4314b;margin-top:8px;">✗ No icons — ADO tooling convention expects icon + label</div>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">After</div>
+          <div style="display:flex;gap:8px;">
+            <div style="padding:5px 12px;border:1px solid #ccc;border-radius:2px;font-size:13px;color:#555;display:flex;align-items:center;gap:5px;">
+              <span style="font-size:14px;">🗑</span> Delete (3)
+            </div>
+            <div style="padding:5px 12px;border:1px solid #ccc;border-radius:2px;font-size:13px;color:#555;display:flex;align-items:center;gap:5px;">
+              <span style="font-size:14px;">⑂</span> Merge (3)
+            </div>
+            <div style="padding:5px 12px;border:1px solid #ccc;border-radius:2px;font-size:13px;color:#555;display:flex;align-items:center;gap:5px;">
+              <span style="font-size:14px;">#</span> Count (3)
+            </div>
+          </div>
+          <div style="font-size:11px;color:#107c10;margin-top:8px;">✓ <code>iconProps: { iconName: "Trash" | "Merge" | "NumberSymbol" }</code> on each IHeaderCommandBarItem</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Section 4: CSS File -->
+<div class="section">
+  <div class="label">F — CSS File: src/app/tag-manager.css</div>
+  <div class="mockup">
+    <div class="mockup-header">CSS Extraction</div>
+    <div class="mockup-body" style="font-size:12px;">
+      <p style="color:#555;margin:0 0 8px;">All inline <code>style={'{{}}'}</code> props extracted to a single <code>src/app/tag-manager.css</code> file using the ADO CSS custom property tokens already referenced in the code.</p>
+      <div style="display:flex;gap:16px;">
+        <div style="flex:1;background:#f9f9f9;padding:10px;border-radius:4px;font-family:monospace;font-size:11px;color:#555;">
+          <div style="color:#888;margin-bottom:6px;">Before (inline, scattered)</div>
+          <div style="color:#c4314b;">style=&#123;&#123; display:"flex",</div>
+          <div style="color:#c4314b;">&nbsp;&nbsp;borderTop:"1px solid</div>
+          <div style="color:#c4314b;">&nbsp;&nbsp;var(--palette-neutral-10)"</div>
+          <div style="color:#c4314b;">&#125;&#125;</div>
+        </div>
+        <div style="flex:1;background:#f9f9f9;padding:10px;border-radius:4px;font-family:monospace;font-size:11px;color:#555;">
+          <div style="color:#888;margin-bottom:6px;">After (tag-manager.css)</div>
+          <div style="color:#107c10;">.tm-status-log &#123;</div>
+          <div style="color:#107c10;">&nbsp;&nbsp;display: flex;</div>
+          <div style="color:#107c10;">&nbsp;&nbsp;border-top: 1px solid</div>
+          <div style="color:#107c10;">&nbsp;&nbsp;&nbsp;&nbsp;var(--palette-neutral-10);</div>
+          <div style="color:#107c10;">&#125;</div>
+        </div>
+      </div>
+      <p style="color:#555;margin:8px 0 0;"><strong>Scope:</strong> 4 files affected — <code>AlphaNav.tsx</code>, <code>TagManagerApp.tsx</code>, <code>StatusLog.tsx</code>, and the new <code>tag-manager.css</code>. No logic changes.</p>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:8px;">Does this look right? Confirm or flag anything to adjust in the terminal.</p>

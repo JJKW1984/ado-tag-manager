@@ -1,5 +1,5 @@
 // src/app/TagManagerApp.tsx
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Card } from "azure-devops-ui/Card";
 import { Header, TitleSize } from "azure-devops-ui/Header";
 import { IHeaderCommandBarItem } from "azure-devops-ui/HeaderCommandBar";
@@ -16,7 +16,12 @@ import { DeleteDialog } from "./DeleteDialog";
 import { MergeDialog } from "./MergeDialog";
 import { CountConfirmDialog } from "./CountConfirmDialog";
 import { StatusLog } from "./StatusLog";
+<<<<<<< HEAD
 import "./tag-manager.css";
+=======
+import { SearchBar } from "./SearchBar";
+import { sanitizeError } from "../utils/sanitizeError";
+>>>>>>> origin/dev
 
 type DialogState =
   | { type: "delete"; tags: TagItem[] }
@@ -54,8 +59,10 @@ export const TagManagerApp: React.FC = () => {
   const [logEntries, setLogEntries] = useState<LogEntry[]>(_initialLog);
   const [alphaFilter, setAlphaFilter] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
   const [projectName, setProjectName] = useState<string>("");
   const logIdRef = useRef(_initialLogId);
+  const tagsRef = useRef<TagItem[]>([]);
 
   // Persist log whenever it changes
   useEffect(() => {
@@ -66,6 +73,10 @@ export const TagManagerApp: React.FC = () => {
       // localStorage unavailable (e.g. private browsing quota) — silently skip
     }
   }, [logEntries]);
+
+  useEffect(() => {
+    tagsRef.current = tags;
+  }, [tags]);
 
   // --- Helpers ---
 
@@ -89,6 +100,24 @@ export const TagManagerApp: React.FC = () => {
       prev.map((t) => (t.id === tagId ? { ...t, count } : t))
     );
   }, []);
+
+  const proj = projectName ? `[${projectName}] ` : "";
+
+  const handleRename = useCallback(async (tagId: string, newName: string) => {
+    const original = tagsRef.current.find((t) => t.id === tagId)?.name ?? tagId;
+    const logId = appendLog(`${proj}Renaming "${original}" → "${newName}"…`, "running");
+    try {
+      const updated = await tagService.renameTagById(tagId, newName);
+      setTags((prev) =>
+        prev
+          .map((t) => (t.id === tagId ? { ...t, name: updated.name } : t))
+          .sort((a, b) => a.name.localeCompare(b.name))
+      );
+      updateLog(logId, `${proj}✓ Renamed "${original}" → "${updated.name}"`, "success");
+    } catch (e) {
+      updateLog(logId, `${proj}✗ Failed to rename "${original}": ${sanitizeError(e)}`, "error");
+    }
+  }, [proj, appendLog, updateLog]);
 
   // --- Data loading ---
 
@@ -147,8 +176,6 @@ export const TagManagerApp: React.FC = () => {
   };
 
   // --- Background jobs ---
-
-  const proj = projectName ? `[${projectName}] ` : "";
 
   const runDeleteJobs = async (tagsToDelete: TagItem[]) => {
     setDialog(null);
@@ -232,16 +259,28 @@ export const TagManagerApp: React.FC = () => {
     setCurrentPage(0);
   };
 
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(0);
+  };
+
   // --- Render ---
 
+  const searchFiltered = searchQuery.trim()
+    ? tags.filter((t) =>
+        t.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+      )
+    : tags;
+  const existingNames = useMemo(() => tags.map((t) => t.name), [tags]);
+
   const filteredTags = alphaFilter
-    ? tags.filter((t) => {
+    ? searchFiltered.filter((t) => {
         const ch = t.name[0]?.toUpperCase();
         return alphaFilter === "#"
           ? !(ch >= "A" && ch <= "Z")
           : ch === alphaFilter;
       })
-    : tags;
+    : searchFiltered;
 
   const totalPages = Math.max(1, Math.ceil(filteredTags.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, totalPages - 1);
@@ -295,9 +334,14 @@ export const TagManagerApp: React.FC = () => {
           </MessageCard>
         )}
         <Card>
+<<<<<<< HEAD
           <div className="tm-card-content">
+=======
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <SearchBar value={searchQuery} onChange={handleSearchChange} />
+>>>>>>> origin/dev
             <AlphaNav
-              tags={tags}
+              tags={searchFiltered}
               activeFilter={alphaFilter}
               onFilter={handleAlphaFilter}
             />
@@ -311,6 +355,8 @@ export const TagManagerApp: React.FC = () => {
                 selectedIds={selectedIds}
                 onToggle={handleToggle}
                 onToggleAll={handleToggleAll}
+                onRename={handleRename}
+                existingNames={existingNames}
               />
             )}
             {!loading && totalPages > 1 && (

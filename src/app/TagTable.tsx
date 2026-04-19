@@ -12,25 +12,35 @@ import { Checkbox } from "azure-devops-ui/Checkbox";
 import { ZeroData } from "azure-devops-ui/ZeroData";
 import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
 import { TagItem } from "../types";
+import { EditableTagName } from "./EditableTagName";
 
-interface TagTableProps {
+type TagTableBaseProps = {
   tags: TagItem[];
   selectedIds: Set<string>;
   onToggle: (id: string) => void;
   onToggleAll: (select: boolean) => void;
-}
+};
+
+type TagTableProps =
+  | (TagTableBaseProps & {
+      onRename: (tagId: string, newName: string) => void | Promise<void>;
+      existingNames: string[];
+    })
+  | (TagTableBaseProps & {
+      onRename?: undefined;
+      existingNames?: string[];
+    });
 
 // Column widths are stable ObservableValues — defined outside the component
 // so they are not recreated on every render (prevents ADO Table column flicker).
 const colWidthSelect = new ObservableValue(48);
 const colWidthName = new ObservableValue(300);
+const EMPTY_NAMES: string[] = [];
 
-export const TagTable: React.FC<TagTableProps> = ({
-  tags,
-  selectedIds,
-  onToggle,
-  onToggleAll,
-}) => {
+export const TagTable: React.FC<TagTableProps> = (props) => {
+  const { tags, selectedIds, onToggle, onToggleAll, onRename } = props;
+  const existingNames = onRename ? props.existingNames : EMPTY_NAMES;
+
   if (tags.length === 0) {
     return (
       <ZeroData
@@ -89,7 +99,16 @@ export const TagTable: React.FC<TagTableProps> = ({
           tableColumn={tableColumn}
           key={`name-${item.id}`}
         >
-          {item.name}
+          {onRename ? (
+            <EditableTagName
+              name={item.name}
+              onRename={(newName) => onRename(item.id, newName)}
+              onCancel={() => {}}
+              existingNames={existingNames}
+            />
+          ) : (
+            item.name
+          )}
         </SimpleTableCell>
       ),
       readonly: true,
@@ -117,7 +136,7 @@ export const TagTable: React.FC<TagTableProps> = ({
       width: -1,
     },
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [selectedIds, onToggle, onToggleAll, allSelected, someSelected]);
+  ], [selectedIds, onToggle, onToggleAll, allSelected, someSelected, onRename, existingNames]);
 
   return (
     <Table<TagItem>
