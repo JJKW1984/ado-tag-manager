@@ -219,9 +219,10 @@ interface AlphaNavProps {
   onFilter: (letter: string | null) => void;
 }
 
-const LETTERS = ["#", ...Array.from({ length: 26 }, (_, i) =>
-  String.fromCharCode(65 + i)
-)];
+const LETTERS = [
+  ...Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)),
+  "#",
+];
 
 export const AlphaNav: React.FC<AlphaNavProps> = ({ tags, activeFilter, onFilter }) => {
   const available = new Set(
