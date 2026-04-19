@@ -6,6 +6,8 @@ import { IHeaderCommandBarItem } from "azure-devops-ui/HeaderCommandBar";
 import { Page } from "azure-devops-ui/Page";
 import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
 import { MessageCard, MessageCardSeverity } from "azure-devops-ui/MessageCard";
+import { Button } from "azure-devops-ui/Button";
+import { ButtonGroup } from "azure-devops-ui/ButtonGroup";
 import { TagService } from "../services/TagService";
 import { TagItem, LogEntry } from "../types";
 import { TagTable } from "./TagTable";
@@ -250,6 +252,7 @@ export const TagManagerApp: React.FC = () => {
     {
       id: "delete",
       text: `Delete${sel}`,
+      iconProps: { iconName: "Trash" },
       disabled: n === 0,
       onActivate: handleDeleteClick,
       important: true,
@@ -257,6 +260,7 @@ export const TagManagerApp: React.FC = () => {
     {
       id: "merge",
       text: `Merge${sel}`,
+      iconProps: { iconName: "Merge" },
       disabled: n === 0,
       onActivate: handleMergeClick,
       important: true,
@@ -264,6 +268,7 @@ export const TagManagerApp: React.FC = () => {
     {
       id: "count",
       text: `Count${sel}`,
+      iconProps: { iconName: "NumberSymbol" },
       disabled: n === 0,
       onActivate: handleCountClick,
       important: true,
@@ -321,33 +326,26 @@ export const TagManagerApp: React.FC = () => {
                   color: "var(--palette-neutral-60, #555)",
                 }}
               >
-                <button
-                  disabled={safePage === 0}
-                  onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-                  style={{
-                    border: "none", background: "none", cursor: safePage === 0 ? "default" : "pointer",
-                    color: safePage === 0 ? "var(--palette-neutral-20, #ccc)" : "var(--communication-foreground, #0078d4)",
-                    fontSize: "13px", padding: "2px 4px",
-                  }}
-                >
-                  ← Previous
-                </button>
                 <span>
                   Page {safePage + 1} of {totalPages}
                   {" "}({filteredTags.length} tag{filteredTags.length !== 1 ? "s" : ""})
                 </span>
-                <button
-                  disabled={safePage >= totalPages - 1}
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
-                  style={{
-                    border: "none", background: "none",
-                    cursor: safePage >= totalPages - 1 ? "default" : "pointer",
-                    color: safePage >= totalPages - 1 ? "var(--palette-neutral-20, #ccc)" : "var(--communication-foreground, #0078d4)",
-                    fontSize: "13px", padding: "2px 4px",
-                  }}
-                >
-                  Next →
-                </button>
+                <ButtonGroup>
+                  <Button
+                    subtle={true}
+                    text="Previous"
+                    iconProps={{ iconName: "ChevronLeft" }}
+                    disabled={safePage === 0}
+                    onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                  />
+                  <Button
+                    subtle={true}
+                    text="Next"
+                    iconProps={{ iconName: "ChevronRight" }}
+                    disabled={safePage >= totalPages - 1}
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+                  />
+                </ButtonGroup>
               </div>
             )}
           </div>
