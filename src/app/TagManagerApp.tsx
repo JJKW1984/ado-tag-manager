@@ -16,12 +16,9 @@ import { DeleteDialog } from "./DeleteDialog";
 import { MergeDialog } from "./MergeDialog";
 import { CountConfirmDialog } from "./CountConfirmDialog";
 import { StatusLog } from "./StatusLog";
-<<<<<<< HEAD
 import "./tag-manager.css";
-=======
 import { SearchBar } from "./SearchBar";
 import { sanitizeError } from "../utils/sanitizeError";
->>>>>>> origin/dev
 
 type DialogState =
   | { type: "delete"; tags: TagItem[] }
@@ -334,12 +331,8 @@ export const TagManagerApp: React.FC = () => {
           </MessageCard>
         )}
         <Card>
-<<<<<<< HEAD
           <div className="tm-card-content">
-=======
-          <div style={{ display: "flex", flexDirection: "column" }}>
             <SearchBar value={searchQuery} onChange={handleSearchChange} />
->>>>>>> origin/dev
             <AlphaNav
               tags={searchFiltered}
               activeFilter={alphaFilter}

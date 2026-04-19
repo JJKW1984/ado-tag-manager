@@ -92,11 +92,11 @@ describe("TagManagerApp — search filter", () => {
     render(<TagManagerApp />);
     await waitFor(() => expect(screen.getByText("alpha")).toBeInTheDocument());
 
-    // After searching "alpha", only alpha is in results — B and G buttons should be disabled
+    // After searching "alpha", only matching letters are rendered in alpha nav.
     await user.type(screen.getByRole("searchbox"), "alpha");
 
-    expect(screen.getByRole("button", { name: "B" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "G" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "B" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "G" })).not.toBeInTheDocument();
   });
 
   it("changing search query resets the current page to 1", async () => {
@@ -112,7 +112,7 @@ describe("TagManagerApp — search filter", () => {
     render(<TagManagerApp />);
     await waitFor(() => expect(screen.getByText("tag-01")).toBeInTheDocument());
 
-    await user.click(screen.getByRole("button", { name: "Next →" }));
+    await user.click(screen.getByRole("button", { name: "Next" }));
     expect(screen.getByText(/Page 2 of/)).toBeInTheDocument();
 
     await user.type(screen.getByRole("searchbox"), "tag");
