@@ -200,3 +200,52 @@ export function Table<T>(props: {
     </table>
   );
 }
+
+// ---- Tabs ----
+const TabBarContext = React.createContext<(id: string) => void>(() => {});
+
+export const TabSize = {
+  Compact: "compact",
+  Tall: "tall",
+  LargeLink: "large-link",
+};
+
+export const TabBar: React.FC<{
+  selectedTabId?: string;
+  onSelectedTabChanged: (tabId: string) => void;
+  tabSize?: string;
+  children?: React.ReactNode;
+}> = ({ children, onSelectedTabChanged }) => (
+  <TabBarContext.Provider value={onSelectedTabChanged}>
+    <div data-testid="ado-tab-bar">{children}</div>
+  </TabBarContext.Provider>
+);
+
+export const Tab: React.FC<{
+  id: string;
+  name?: string;
+}> = ({ id, name }) => {
+  const onTabChanged = React.useContext(TabBarContext);
+  return (
+    <button data-testid={`ado-tab-${id}`} onClick={() => onTabChanged(id)}>
+      {name}
+    </button>
+  );
+};
+
+// ---- Button / ButtonGroup ----
+export const Button: React.FC<{
+  text?: string;
+  subtle?: boolean;
+  disabled?: boolean;
+  onClick?: () => void;
+  iconProps?: { iconName: string };
+}> = ({ text, disabled, onClick }) => (
+  <button disabled={disabled} onClick={onClick}>
+    {text}
+  </button>
+);
+
+export const ButtonGroup: React.FC<React.PropsWithChildren<unknown>> = ({
+  children,
+}) => <div data-testid="ado-button-group">{children}</div>;
