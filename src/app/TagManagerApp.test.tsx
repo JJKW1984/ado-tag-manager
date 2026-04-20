@@ -100,4 +100,18 @@ describe("TagManagerApp", () => {
     expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Next" })).not.toBeDisabled();
   });
+
+  it("uses correct icon names for Delete, Merge, and Count command bar items", async () => {
+    mockTagService.getAllTags.mockResolvedValue([]);
+
+    const { container } = render(<TagManagerApp />);
+
+    await waitFor(() => {
+      expect(container.querySelector('[data-icon="Delete"]')).not.toBeNull();
+      expect(container.querySelector('[data-icon="BranchMerge"]')).not.toBeNull();
+      expect(container.querySelector('[data-icon="NumberSymbol"]')).not.toBeNull();
+      expect(container.querySelector('[data-icon="Trash"]')).toBeNull();
+      expect(container.querySelector('[data-icon="Merge"]')).toBeNull();
+    });
+  });
 });

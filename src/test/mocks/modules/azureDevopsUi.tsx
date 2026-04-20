@@ -38,6 +38,7 @@ interface HeaderItem {
   text: string;
   disabled?: boolean;
   onActivate?: () => void;
+  iconProps?: { iconName: string };
 }
 
 export const Header: React.FC<{
@@ -52,6 +53,7 @@ export const Header: React.FC<{
       {commandBarItems.map((item) => (
         <button
           key={item.id}
+          data-icon={item.iconProps?.iconName}
           disabled={item.disabled}
           onClick={() => item.onActivate?.()}
         >

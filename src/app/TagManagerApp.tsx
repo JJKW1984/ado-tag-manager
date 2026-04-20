@@ -289,7 +289,7 @@ export const TagManagerApp: React.FC = () => {
     {
       id: "delete",
       text: `Delete${sel}`,
-      iconProps: { iconName: "Trash" },
+      iconProps: { iconName: "Delete" },
       disabled: n === 0,
       onActivate: handleDeleteClick,
       important: true,
@@ -297,7 +297,7 @@ export const TagManagerApp: React.FC = () => {
     {
       id: "merge",
       text: `Merge${sel}`,
-      iconProps: { iconName: "Merge" },
+      iconProps: { iconName: "BranchMerge" },
       disabled: n === 0,
       onActivate: handleMergeClick,
       important: true,
