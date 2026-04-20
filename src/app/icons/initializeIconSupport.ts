@@ -7,5 +7,5 @@ export function initializeIconSupport(): void {
     return;
   }
   initialized = true;
+  document.body.classList.add("fluent-icons-enabled");
 }
-
