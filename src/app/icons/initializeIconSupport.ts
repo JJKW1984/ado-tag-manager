@@ -1,4 +1,4 @@
-import "azure-devops-ui/Components/Icon/Icon";
+import { Icon } from "azure-devops-ui/Icon";
 
 let initialized = false;
 
