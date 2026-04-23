@@ -25,6 +25,7 @@ export const DeleteDialog: React.FC<DeleteDialogProps> = ({
           primary: true,
           danger: true,
           onClick: onConfirm,
+          iconProps: { iconName: "Delete" },
         },
       ]}
       onDismiss={onCancel}

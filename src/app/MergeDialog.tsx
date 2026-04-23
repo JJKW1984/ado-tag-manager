@@ -97,6 +97,7 @@ export const MergeDialog: React.FC<MergeDialogProps> = ({
           danger: true,
           disabled: !isValid,
           onClick: () => onConfirm(trimmed),
+          iconProps: { iconName: "BranchMerge"  },
         },
       ]}
       onDismiss={onCancel}
