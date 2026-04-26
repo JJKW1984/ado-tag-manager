@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import "@testing-library/jest-dom";
 
 const renderMock = jest.fn();
 
