@@ -1,5 +1,6 @@
 // src/app/DeleteDialog.tsx
 import React from "react";
+import { Icon } from "azure-devops-ui/Icon";
 import { Dialog } from "azure-devops-ui/Dialog";
 import { MessageCard, MessageCardSeverity } from "azure-devops-ui/MessageCard";
 import { TagItem } from "../types";

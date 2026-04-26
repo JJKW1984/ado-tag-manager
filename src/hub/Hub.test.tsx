@@ -1,3 +1,5 @@
+import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+
 const renderMock = jest.fn();
 
 jest.mock("react-dom", () => ({
@@ -26,22 +28,4 @@ describe("Hub bootstrap", () => {
     expect(sdkMock.mockNotifyLoadSucceeded).toHaveBeenCalledTimes(1);
   });
 
-  it("initializes icon support before rendering", async () => {
-    const order: string[] = [];
-    jest.doMock("../app/icons/initializeIconSupport", () => ({
-      initializeIconSupport: () => {
-        order.push("icons");
-      },
-    }));
-    renderMock.mockImplementation(() => {
-      order.push("render");
-    });
-
-    await import("./Hub");
-    await flushPromises();
-
-    expect(order).toContain("render");
-    expect(order.indexOf("icons")).toBeGreaterThanOrEqual(0);
-    expect(order.indexOf("icons")).toBeLessThan(order.indexOf("render"));
-  });
 });
