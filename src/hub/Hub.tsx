@@ -1,4 +1,6 @@
 import "azure-devops-ui/Core/override.css";
+import "azure-devops-ui/Components/Icon/FluentIcons.css";
+import "azure-devops-ui/Components/Icon/FabricIcons.css";
 import * as SDK from "azure-devops-extension-sdk";
 import React from "react";
 import ReactDOM from "react-dom";
