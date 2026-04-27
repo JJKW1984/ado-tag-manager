@@ -64,32 +64,6 @@ describe("TagManagerApp — rename flow", () => {
     });
   });
 
-  it("appends a success entry to the activity log after rename", async () => {
-    const user = userEvent.setup();
-    render(<TagManagerApp />);
-
-    await waitFor(() => expect(screen.getByText("alpha")).toBeInTheDocument());
-
-    await user.dblClick(screen.getByText("alpha"));
-    const input = screen.getByRole("textbox", { name: "Edit tag name" });
-    await user.clear(input);
-    await user.type(input, "renamed-tag");
-    await user.keyboard("[Enter]");
-
-    await waitFor(() => {
-      expect(screen.getByText(/Activity Log/)).toBeInTheDocument();
-    });
-
-    const user2 = userEvent.setup();
-    await user2.click(screen.getByText(/Activity Log/));
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(/✓ Renamed "alpha" → "renamed-tag"/)
-      ).toBeInTheDocument();
-    });
-  });
-
   it("keeps tags alphabetically ordered after a successful rename", async () => {
     mockTagService.renameTagById.mockResolvedValue({ id: "1", name: "zeta", url: "u" });
     const user = userEvent.setup();
@@ -112,29 +86,6 @@ describe("TagManagerApp — rename flow", () => {
 });
 
 describe("TagManagerApp — rename failure", () => {
-  it("appends an error log entry when renameTagById throws", async () => {
-    mockTagService.renameTagById.mockRejectedValue(new Error("permission denied"));
-    const user = userEvent.setup();
-    render(<TagManagerApp />);
-
-    await waitFor(() => expect(screen.getByText("alpha")).toBeInTheDocument());
-
-    await user.dblClick(screen.getByText("alpha"));
-    const input = screen.getByRole("textbox", { name: "Edit tag name" });
-    await user.clear(input);
-    await user.type(input, "new-name");
-    await user.keyboard("[Enter]");
-
-    await waitFor(() => screen.getByText(/Activity Log/));
-    const user2 = userEvent.setup();
-    await user2.click(screen.getByText(/Activity Log/));
-
-    await waitFor(() => {
-      expect(screen.getByText(/✗ Failed to rename "alpha"/)).toBeInTheDocument();
-      expect(screen.getByText(/permission denied/)).toBeInTheDocument();
-    });
-  });
-
   it("leaves the original tag name in the list when rename fails", async () => {
     mockTagService.renameTagById.mockRejectedValue(new Error("permission denied"));
     const user = userEvent.setup();

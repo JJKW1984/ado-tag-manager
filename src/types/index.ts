@@ -9,13 +9,6 @@ export interface TagItem {
   count?: number;
 }
 
-export interface LogEntry {
-  id: number;
-  timestamp: Date;
-  message: string;
-  status: "info" | "success" | "error" | "running";
-}
-
 /** Kept for applyTagUpdate return value (merge) */
 export interface TagOperationResult {
   affectedCount: number;
