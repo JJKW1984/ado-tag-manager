@@ -9,6 +9,8 @@ import { MessageCard, MessageCardSeverity } from "azure-devops-ui/MessageCard";
 import { Button } from "azure-devops-ui/Button";
 import { ButtonGroup } from "azure-devops-ui/ButtonGroup";
 import { TagService } from "../services/TagService";
+import * as SDK from "azure-devops-extension-sdk";
+import { TagCountCacheService } from "../services/TagCountCacheService";
 import { TagItem } from "../types";
 import { TagTable } from "./TagTable";
 import { AlphaNav } from "./AlphaNav";
@@ -24,6 +26,7 @@ type DialogState =
   | null;
 
 const tagService = new TagService();
+const tagCountCacheService = new TagCountCacheService();
 const PAGE_SIZE = 25;
 
 export const TagManagerApp: React.FC = () => {
@@ -35,6 +38,8 @@ export const TagManagerApp: React.FC = () => {
   const [alphaFilter, setAlphaFilter] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const tagsRef = useRef<TagItem[]>([]);
 
   useEffect(() => {
@@ -56,21 +61,47 @@ export const TagManagerApp: React.FC = () => {
     }
   }, []);
 
+  const triggerBackgroundRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      const orgName = SDK.getHost().name;
+      const cache = await tagCountCacheService.refreshCache(orgName);
+      setTags((prev) =>
+        prev.map((t) => ({ ...t, count: cache.counts[t.name.toLowerCase()] ?? 0 }))
+      );
+      setLastUpdated(cache.lastUpdated);
+    } catch (e) {
+      setError(sanitizeError(e));
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, []);
+
   // --- Data loading ---
 
   const loadTags = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await tagService.getAllTags();
-      setTags(result);
+      const [result, cache] = await Promise.all([
+        tagService.getAllTags(),
+        tagCountCacheService.getCache(),
+      ]);
+      const tagsWithCounts = cache
+        ? result.map((t) => ({ ...t, count: cache.counts[t.name.toLowerCase()] ?? 0 }))
+        : result;
+      setTags(tagsWithCounts);
+      if (cache) setLastUpdated(cache.lastUpdated);
       setSelectedIds(new Set());
+      if (tagCountCacheService.isStaleCacheOrMissing(cache)) {
+        void triggerBackgroundRefresh();
+      }
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(sanitizeError(e));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [triggerBackgroundRefresh]);
 
   useEffect(() => {
     loadTags();
@@ -227,6 +258,21 @@ export const TagManagerApp: React.FC = () => {
               activeFilter={alphaFilter}
               onFilter={handleAlphaFilter}
             />
+            <div className="tm-refresh-bar">
+              <span className="tm-last-updated">
+                Last updated:{" "}
+                {lastUpdated ? new Date(lastUpdated).toLocaleString() : "Never"}
+              </span>
+              {isRefreshing && (
+                <Spinner size={SpinnerSize.small} label="Refreshing…" />
+              )}
+              <Button
+                text="Refresh Counts"
+                iconProps={{ iconName: "Refresh" }}
+                disabled={isRefreshing}
+                onClick={() => void triggerBackgroundRefresh()}
+              />
+            </div>
             {loading ? (
               <div className="tm-spinner-wrapper">
                 <Spinner size={SpinnerSize.large} label="Loading tags…" />
