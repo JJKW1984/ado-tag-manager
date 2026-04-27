@@ -29,28 +29,30 @@ export class TagCountCacheService {
 
   async fetchCounts(orgName: string): Promise<Record<string, number>> {
     const token = await SDK.getAccessToken();
-    const url =
-      `https://analytics.dev.azure.com/${encodeURIComponent(orgName)}/_odata/v4.0-preview/WorkItems` +
-      `?$apply=groupby((Tags/TagName),aggregate($count as Count))`;
-
-    const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => res.statusText);
-      throw new Error(`Analytics OData: ${res.status} ${text}`);
-    }
-
-    const data = await res.json() as {
-      value?: Array<{ Tags?: { TagName: string | null } | null; Count: number }>;
-    };
-
     const counts: Record<string, number> = {};
-    for (const item of data.value ?? []) {
-      if (item.Tags?.TagName) {
-        counts[item.Tags.TagName.toLowerCase()] = item.Count;
+    let url: string | null =
+      `https://analytics.dev.azure.com/${encodeURIComponent(orgName)}/_odata/v4.0-preview/WorkItems` +
+      `?$select=WorkItemId&$expand=Tags($select=TagName)&$filter=Tags/any()`;
+
+    while (url) {
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) {
+        const text = await res.text().catch(() => res.statusText);
+        throw new Error(`Analytics OData: ${res.status} ${text}`);
       }
+      const data = await res.json() as {
+        value: Array<{ Tags: Array<{ TagName: string | null }> | null }>;
+        "@odata.nextLink"?: string;
+      };
+      for (const item of data.value ?? []) {
+        for (const tag of item.Tags ?? []) {
+          if (tag?.TagName) {
+            const name = tag.TagName.toLowerCase();
+            counts[name] = (counts[name] ?? 0) + 1;
+          }
+        }
+      }
+      url = data["@odata.nextLink"] ?? null;
     }
     return counts;
   }

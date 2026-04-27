@@ -71,8 +71,8 @@ describe("TagCountCacheService", () => {
       ok: true,
       json: async () => ({
         value: [
-          { Tags: { TagName: "Bug" }, Count: 10 },
-          { Tags: { TagName: "Feature" }, Count: 5 },
+          { Tags: [{ TagName: "Bug" }, { TagName: "Feature" }] },
+          { Tags: [{ TagName: "Bug" }] },
         ],
       }),
     });
@@ -83,21 +83,22 @@ describe("TagCountCacheService", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, options] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toContain("analytics.dev.azure.com/my-org");
-    expect(url).toContain("$apply=groupby");
+    expect(url).toContain("$expand=Tags");
+    expect(url).toContain("$filter=Tags/any()");
     expect((options.headers as Record<string, string>)["Authorization"]).toBe(
       "Bearer test-access-token"
     );
-    expect(counts).toEqual({ bug: 10, feature: 5 });
+    expect(counts).toEqual({ bug: 2, feature: 1 });
   });
 
-  it("skips entries with null or missing TagName", async () => {
+  it("skips entries with null Tags or null TagName", async () => {
     fetchMock.mockResolvedValue({
       ok: true,
       json: async () => ({
         value: [
-          { Tags: { TagName: "ops" }, Count: 7 },
-          { Tags: null, Count: 3 },
-          { Tags: { TagName: null }, Count: 1 },
+          { Tags: [{ TagName: "ops" }] },
+          { Tags: null },
+          { Tags: [{ TagName: null }] },
         ],
       }),
     });
@@ -105,7 +106,30 @@ describe("TagCountCacheService", () => {
     const service = new TagCountCacheService();
     const counts = await service.fetchCounts("my-org");
 
-    expect(counts).toEqual({ ops: 7 });
+    expect(counts).toEqual({ ops: 1 });
+  });
+
+  it("follows @odata.nextLink to aggregate across pages", async () => {
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          value: [{ Tags: [{ TagName: "bug" }] }],
+          "@odata.nextLink": "https://analytics.dev.azure.com/my-org/_odata/v4.0-preview/WorkItems?$skiptoken=abc",
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          value: [{ Tags: [{ TagName: "bug" }, { TagName: "feature" }] }],
+        }),
+      });
+
+    const service = new TagCountCacheService();
+    const counts = await service.fetchCounts("my-org");
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(counts).toEqual({ bug: 2, feature: 1 });
   });
 
   it("throws on non-OK response", async () => {
@@ -126,7 +150,7 @@ describe("TagCountCacheService", () => {
     fetchMock.mockResolvedValue({
       ok: true,
       json: async () => ({
-        value: [{ Tags: { TagName: "ops" }, Count: 7 }],
+        value: [{ Tags: [{ TagName: "ops" }] }],
       }),
     });
     mockExtensionDataManager.setValue.mockResolvedValue(undefined);
@@ -134,12 +158,12 @@ describe("TagCountCacheService", () => {
     const service = new TagCountCacheService();
     const result = await service.refreshCache("my-org");
 
-    expect(result.counts).toEqual({ ops: 7 });
+    expect(result.counts).toEqual({ ops: 1 });
     expect(result.lastUpdated).toBeDefined();
     expect(new Date(result.lastUpdated).getTime()).toBeGreaterThan(0);
     expect(mockExtensionDataManager.setValue).toHaveBeenCalledWith(
       "orgTagCounts",
-      expect.objectContaining({ counts: { ops: 7 } }),
+      expect.objectContaining({ counts: { ops: 1 } }),
       { scopeType: "Default" }
     );
   });
