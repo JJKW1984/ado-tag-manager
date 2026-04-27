@@ -9,12 +9,13 @@ import { MessageCard, MessageCardSeverity } from "azure-devops-ui/MessageCard";
 import { Button } from "azure-devops-ui/Button";
 import { ButtonGroup } from "azure-devops-ui/ButtonGroup";
 import { TagService } from "../services/TagService";
+import * as SDK from "azure-devops-extension-sdk";
+import { TagCountCacheService } from "../services/TagCountCacheService";
 import { TagItem } from "../types";
 import { TagTable } from "./TagTable";
 import { AlphaNav } from "./AlphaNav";
 import { DeleteDialog } from "./DeleteDialog";
 import { MergeDialog } from "./MergeDialog";
-import { CountConfirmDialog } from "./CountConfirmDialog";
 import "./tag-manager.css";
 import { SearchBar } from "./SearchBar";
 import { sanitizeError } from "../utils/sanitizeError";
@@ -22,11 +23,10 @@ import { sanitizeError } from "../utils/sanitizeError";
 type DialogState =
   | { type: "delete"; tags: TagItem[] }
   | { type: "merge"; sources: TagItem[] }
-  | { type: "countConfirm"; tags: TagItem[] }
   | null;
 
 const tagService = new TagService();
-const COUNT_CONFIRM_THRESHOLD = 10;
+const tagCountCacheService = new TagCountCacheService();
 const PAGE_SIZE = 25;
 
 export const TagManagerApp: React.FC = () => {
@@ -38,6 +38,8 @@ export const TagManagerApp: React.FC = () => {
   const [alphaFilter, setAlphaFilter] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const tagsRef = useRef<TagItem[]>([]);
 
   useEffect(() => {
@@ -45,12 +47,6 @@ export const TagManagerApp: React.FC = () => {
   }, [tags]);
 
   // --- Helpers ---
-
-  const updateTagCount = useCallback((tagId: string, count: number) => {
-    setTags((prev) =>
-      prev.map((t) => (t.id === tagId ? { ...t, count } : t))
-    );
-  }, []);
 
   const handleRename = useCallback(async (tagId: string, newName: string) => {
     try {
@@ -65,21 +61,47 @@ export const TagManagerApp: React.FC = () => {
     }
   }, []);
 
+  const triggerBackgroundRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      const orgName = SDK.getHost().name;
+      const cache = await tagCountCacheService.refreshCache(orgName);
+      setTags((prev) =>
+        prev.map((t) => ({ ...t, count: cache.counts[t.name.toLowerCase()] ?? 0 }))
+      );
+      setLastUpdated(cache.lastUpdated);
+    } catch (e) {
+      setError(sanitizeError(e));
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, []);
+
   // --- Data loading ---
 
   const loadTags = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await tagService.getAllTags();
-      setTags(result);
+      const [result, cache] = await Promise.all([
+        tagService.getAllTags(),
+        tagCountCacheService.getCache(),
+      ]);
+      const tagsWithCounts = cache
+        ? result.map((t) => ({ ...t, count: cache.counts[t.name.toLowerCase()] ?? 0 }))
+        : result;
+      setTags(tagsWithCounts);
+      if (cache) setLastUpdated(cache.lastUpdated);
       setSelectedIds(new Set());
+      if (tagCountCacheService.isStaleCacheOrMissing(cache)) {
+        void triggerBackgroundRefresh();
+      }
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(sanitizeError(e));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [triggerBackgroundRefresh]);
 
   useEffect(() => {
     loadTags();
@@ -109,15 +131,6 @@ export const TagManagerApp: React.FC = () => {
   const handleMergeClick = () => {
     const selected = tags.filter((t) => selectedIds.has(t.id));
     setDialog({ type: "merge", sources: selected });
-  };
-
-  const handleCountClick = () => {
-    const selected = tags.filter((t) => selectedIds.has(t.id));
-    if (selected.length > COUNT_CONFIRM_THRESHOLD) {
-      setDialog({ type: "countConfirm", tags: selected });
-    } else {
-      runCountJobs(selected);
-    }
   };
 
   // --- Background jobs ---
@@ -161,23 +174,6 @@ export const TagManagerApp: React.FC = () => {
     // Re-select any sources that failed to merge so user can retry.
     if (failedSourceIds.size > 0) {
       setSelectedIds(failedSourceIds);
-    }
-  };
-
-  const runCountJobs = async (tagsToCount: TagItem[]) => {
-    setDialog(null);
-    // Mark each as counting (-1 sentinel)
-    for (const tag of tagsToCount) {
-      updateTagCount(tag.id, -1);
-    }
-    for (const tag of tagsToCount) {
-      try {
-        const count = await tagService.countTagAcrossProjects(tag.name);
-        updateTagCount(tag.id, count);
-      } catch (e) {
-        updateTagCount(tag.id, 0);
-        setError(e instanceof Error ? e.message : String(e));
-      }
     }
   };
 
@@ -234,14 +230,6 @@ export const TagManagerApp: React.FC = () => {
       onActivate: handleMergeClick,
       important: true,
     },
-    {
-      id: "count",
-      text: `Count${sel}`,
-      iconProps: { iconName: "NumberSymbol" },
-      disabled: n === 0,
-      onActivate: handleCountClick,
-      important: true,
-    },
   ];
 
   return (
@@ -270,6 +258,21 @@ export const TagManagerApp: React.FC = () => {
               activeFilter={alphaFilter}
               onFilter={handleAlphaFilter}
             />
+            <div className="tm-refresh-bar">
+              <span className="tm-last-updated">
+                Last updated:{" "}
+                {lastUpdated ? new Date(lastUpdated).toLocaleString() : "Never"}
+              </span>
+              {isRefreshing && (
+                <Spinner size={SpinnerSize.small} label="Refreshing…" />
+              )}
+              <Button
+                text="Refresh Counts"
+                iconProps={{ iconName: "Refresh" }}
+                disabled={isRefreshing}
+                onClick={() => void triggerBackgroundRefresh()}
+              />
+            </div>
             {loading ? (
               <div className="tm-spinner-wrapper">
                 <Spinner size={SpinnerSize.large} label="Loading tags…" />
@@ -327,13 +330,7 @@ export const TagManagerApp: React.FC = () => {
           onCancel={() => setDialog(null)}
         />
       )}
-      {dialog?.type === "countConfirm" && (
-        <CountConfirmDialog
-          tags={dialog.tags}
-          onConfirm={() => runCountJobs(dialog.tags)}
-          onCancel={() => setDialog(null)}
-        />
-      )}
+
     </Page>
   );
 };

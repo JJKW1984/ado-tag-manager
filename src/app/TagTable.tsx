@@ -10,7 +10,6 @@ import { ObservableValue } from "azure-devops-ui/Core/Observable";
 import { ArrayItemProvider } from "azure-devops-ui/Utilities/Provider";
 import { Checkbox } from "azure-devops-ui/Checkbox";
 import { ZeroData } from "azure-devops-ui/ZeroData";
-import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
 import { TagItem } from "../types";
 import { EditableTagName } from "./EditableTagName";
 
@@ -125,8 +124,6 @@ export const TagTable: React.FC<TagTableProps> = (props) => {
         >
           {item.count === undefined ? (
             <span style={{ color: "var(--palette-neutral-30, #aaa)" }}>—</span>
-          ) : item.count === -1 ? (
-            <Spinner size={SpinnerSize.small} />
           ) : (
             String(item.count)
           )}
