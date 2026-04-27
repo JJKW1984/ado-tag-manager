@@ -27,8 +27,9 @@ export const mockExtensionDataService = {
 };
 
 export const mockGetService = jest.fn(async (serviceId: string) => {
-  if (serviceId === "ms.vss-web.extension-data-service") return mockExtensionDataService;
-  return mockProjectPageService;
+  if (serviceId === "ms.vss-features.extension-data-service") return mockExtensionDataService;
+  if (serviceId === "ms.vss-tfs-web.tfs-page-data-service") return mockProjectPageService;
+  throw new Error(`mockGetService: unrecognised service ID "${serviceId}"`);
 });
 
 export const mockRegister = jest.fn(
@@ -83,8 +84,9 @@ export function resetAzureDevopsSdkMock(): void {
 
   mockGetService.mockClear();
   mockGetService.mockImplementation(async (serviceId: string) => {
-    if (serviceId === "ms.vss-web.extension-data-service") return mockExtensionDataService;
-    return mockProjectPageService;
+    if (serviceId === "ms.vss-features.extension-data-service") return mockExtensionDataService;
+    if (serviceId === "ms.vss-tfs-web.tfs-page-data-service") return mockProjectPageService;
+    throw new Error(`mockGetService: unrecognised service ID "${serviceId}"`);
   });
 
   mockRegister.mockClear();
