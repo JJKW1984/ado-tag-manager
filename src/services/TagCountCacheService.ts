@@ -43,7 +43,7 @@ export class TagCountCacheService {
     }
 
     const data = await res.json() as {
-      value: Array<{ Tags: { TagName: string } | null; Count: number }>;
+      value?: Array<{ Tags?: { TagName: string | null } | null; Count: number }>;
     };
 
     const counts: Record<string, number> = {};
@@ -64,6 +64,8 @@ export class TagCountCacheService {
 
   isStaleCacheOrMissing(cache: TagCountCache | null): boolean {
     if (!cache) return true;
-    return Date.now() - new Date(cache.lastUpdated).getTime() > STALE_THRESHOLD_MS;
+    const ts = new Date(cache.lastUpdated).getTime();
+    if (Number.isNaN(ts)) return true;
+    return Date.now() - ts > STALE_THRESHOLD_MS;
   }
 }

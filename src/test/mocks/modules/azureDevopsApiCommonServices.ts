@@ -7,6 +7,11 @@ export interface IProjectPageService {
   getProject(): Promise<{ name: string } | null>;
 }
 
+export interface IExtensionDataManager {
+  getValue<T>(key: string, documentId?: string): Promise<T>;
+  setValue<T>(key: string, value: T, documentId?: string): Promise<T>;
+}
+
 export interface IExtensionDataService {
-  getExtensionDataManager(extensionId: string, accessToken: string): Promise<unknown>;
+  getExtensionDataManager(extensionId: string, accessToken: string): Promise<IExtensionDataManager>;
 }
