@@ -14,7 +14,6 @@ import { TagTable } from "./TagTable";
 import { AlphaNav } from "./AlphaNav";
 import { DeleteDialog } from "./DeleteDialog";
 import { MergeDialog } from "./MergeDialog";
-import { CountConfirmDialog } from "./CountConfirmDialog";
 import "./tag-manager.css";
 import { SearchBar } from "./SearchBar";
 import { sanitizeError } from "../utils/sanitizeError";
@@ -22,11 +21,9 @@ import { sanitizeError } from "../utils/sanitizeError";
 type DialogState =
   | { type: "delete"; tags: TagItem[] }
   | { type: "merge"; sources: TagItem[] }
-  | { type: "countConfirm"; tags: TagItem[] }
   | null;
 
 const tagService = new TagService();
-const COUNT_CONFIRM_THRESHOLD = 10;
 const PAGE_SIZE = 25;
 
 export const TagManagerApp: React.FC = () => {
@@ -45,12 +42,6 @@ export const TagManagerApp: React.FC = () => {
   }, [tags]);
 
   // --- Helpers ---
-
-  const updateTagCount = useCallback((tagId: string, count: number) => {
-    setTags((prev) =>
-      prev.map((t) => (t.id === tagId ? { ...t, count } : t))
-    );
-  }, []);
 
   const handleRename = useCallback(async (tagId: string, newName: string) => {
     try {
@@ -111,15 +102,6 @@ export const TagManagerApp: React.FC = () => {
     setDialog({ type: "merge", sources: selected });
   };
 
-  const handleCountClick = () => {
-    const selected = tags.filter((t) => selectedIds.has(t.id));
-    if (selected.length > COUNT_CONFIRM_THRESHOLD) {
-      setDialog({ type: "countConfirm", tags: selected });
-    } else {
-      runCountJobs(selected);
-    }
-  };
-
   // --- Background jobs ---
 
   const runDeleteJobs = async (tagsToDelete: TagItem[]) => {
@@ -161,23 +143,6 @@ export const TagManagerApp: React.FC = () => {
     // Re-select any sources that failed to merge so user can retry.
     if (failedSourceIds.size > 0) {
       setSelectedIds(failedSourceIds);
-    }
-  };
-
-  const runCountJobs = async (tagsToCount: TagItem[]) => {
-    setDialog(null);
-    // Mark each as counting (-1 sentinel)
-    for (const tag of tagsToCount) {
-      updateTagCount(tag.id, -1);
-    }
-    for (const tag of tagsToCount) {
-      try {
-        const count = await tagService.countTagAcrossProjects(tag.name);
-        updateTagCount(tag.id, count);
-      } catch (e) {
-        updateTagCount(tag.id, 0);
-        setError(e instanceof Error ? e.message : String(e));
-      }
     }
   };
 
@@ -232,14 +197,6 @@ export const TagManagerApp: React.FC = () => {
       iconProps: { iconName: "BranchMerge" },
       disabled: n === 0,
       onActivate: handleMergeClick,
-      important: true,
-    },
-    {
-      id: "count",
-      text: `Count${sel}`,
-      iconProps: { iconName: "NumberSymbol" },
-      disabled: n === 0,
-      onActivate: handleCountClick,
       important: true,
     },
   ];
@@ -327,13 +284,7 @@ export const TagManagerApp: React.FC = () => {
           onCancel={() => setDialog(null)}
         />
       )}
-      {dialog?.type === "countConfirm" && (
-        <CountConfirmDialog
-          tags={dialog.tags}
-          onConfirm={() => runCountJobs(dialog.tags)}
-          onCancel={() => setDialog(null)}
-        />
-      )}
+
     </Page>
   );
 };
