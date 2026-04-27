@@ -2,7 +2,6 @@
 import * as SDK from "azure-devops-extension-sdk";
 import { getClient } from "azure-devops-extension-api";
 import { WorkItemTrackingRestClient } from "azure-devops-extension-api/WorkItemTracking";
-import { CoreRestClient } from "azure-devops-extension-api/Core/CoreClient";
 import { CommonServiceIds, IProjectPageService } from "azure-devops-extension-api/Common/CommonServices";
 import { WorkItemBatchGetRequest } from "azure-devops-extension-api/WorkItemTracking";
 import { TagItem, TagOperationResult } from "../types";
@@ -100,34 +99,6 @@ export class TagService {
       `/${encodeURIComponent(tagId)}`,
       { name: newName }
     );
-  }
-
-  /**
-   * Counts how many work items have this tag across ALL projects in the org.
-   */
-  async countTagAcrossProjects(tagName: string): Promise<number> {
-    const coreClient = getClient(CoreRestClient);
-    const witClient = getClient(WorkItemTrackingRestClient);
-    const escaped = tagName.replace(/'/g, "''");
-
-    // Fetch up to 1000 projects (handles most orgs; large orgs may need pagination)
-    const projects = await coreClient.getProjects(undefined, 1000);
-    let total = 0;
-
-    for (const project of projects) {
-      try {
-        const result = await witClient.queryByWiql(
-          {
-            query: `SELECT [System.Id] FROM WorkItems WHERE [System.Tags] CONTAINS '${escaped}' AND [System.TeamProject] = '${project.name.replace(/'/g, "''")}'`,
-          },
-          project.name
-        );
-        total += result.workItems?.length ?? 0;
-      } catch {
-        // Skip projects we can't query (permissions, etc.)
-      }
-    }
-    return total;
   }
 
   /**
