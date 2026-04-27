@@ -41,6 +41,7 @@
     }
   ],
   "scopes": [
+    "vso.analytics",
     "vso.work",
     "vso.work_write"
   ],
@@ -63,6 +64,11 @@
     },
     "author": {
       "uri": "https://www.linkedin.com/in/josephjohnkarl/"
+    }
+  },
+  "content": {
+    "details": {
+      "path": "overview.md"
     }
   },
   "public": false,
