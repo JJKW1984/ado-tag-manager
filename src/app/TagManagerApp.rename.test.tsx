@@ -8,7 +8,6 @@ const mockTagService = {
   deleteTagById: jest.fn(),
   renameTagById: jest.fn(),
   mergeTag: jest.fn(),
-  countTagAcrossProjects: jest.fn(),
 };
 
 jest.mock("../services/TagService", () => ({
