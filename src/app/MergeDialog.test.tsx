@@ -48,4 +48,20 @@ describe("MergeDialog", () => {
 
     expect(screen.getByText("Create new")).toBeInTheDocument();
   });
+
+  it("shows all non-source tags when the input is empty", () => {
+    render(
+      <MergeDialog
+        sources={sources}
+        allTags={allTags}
+        onConfirm={jest.fn()}
+        onCancel={jest.fn()}
+      />
+    );
+
+    expect(screen.getAllByTestId("pill")).toHaveLength(3);
+    expect(screen.getByText("platform")).toBeInTheDocument();
+    expect(screen.getByText("frontend")).toBeInTheDocument();
+    expect(screen.getByText("old-tag")).toBeInTheDocument();
+  });
 });

@@ -215,19 +215,19 @@ export const TagManagerApp: React.FC = () => {
   const sel = n > 0 ? ` (${n})` : "";
   const commandBarItems: IHeaderCommandBarItem[] = [
     {
-      id: "delete",
-      text: `Delete${sel}`,
-      iconProps: { iconName: "Delete" },
-      disabled: n === 0,
-      onActivate: handleDeleteClick,
-      important: true,
-    },
-    {
       id: "merge",
       text: `Merge${sel}`,
       iconProps: { iconName: "BranchMerge" },
       disabled: n === 0,
       onActivate: handleMergeClick,
+      important: true,
+    },
+    {
+      id: "delete",
+      text: `Delete${sel}`,
+      iconProps: { iconName: "Delete" },
+      disabled: n === 0,
+      onActivate: handleDeleteClick,
       important: true,
     },
   ];

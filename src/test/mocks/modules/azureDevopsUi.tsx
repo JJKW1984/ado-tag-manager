@@ -252,3 +252,26 @@ export const Button: React.FC<{
 export const ButtonGroup: React.FC<React.PropsWithChildren<unknown>> = ({
   children,
 }) => <div data-testid="ado-button-group">{children}</div>;
+
+// ---- Pill ----
+export const PillSize = {
+  compact: 0,
+  regular: 1,
+  large: 2,
+};
+
+export const PillVariant = {
+  standard: 0,
+  outlined: 1,
+  colored: 2,
+  themedStandard: 3,
+};
+
+export const Pill: React.FC<
+  React.PropsWithChildren<{
+    size?: number;
+    variant?: number;
+    iconProps?: { iconName: string };
+    className?: string;
+  }>
+> = ({ children }) => <span data-testid="pill">{children}</span>;

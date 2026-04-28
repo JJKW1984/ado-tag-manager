@@ -69,6 +69,24 @@ describe("TagManagerApp", () => {
     expect(screen.queryByRole("button", { name: /^Count/ })).toBeNull();
   });
 
+  it("renders Merge before Delete in the command bar", async () => {
+    mockTagService.getAllTags.mockResolvedValue([]);
+
+    const { container } = render(<TagManagerApp />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Merge" })).toBeInTheDocument();
+    });
+
+    const buttons = Array.from(container.querySelectorAll("button"));
+    const mergeIndex = buttons.findIndex((button) => button.textContent?.includes("Merge"));
+    const deleteIndex = buttons.findIndex((button) => button.textContent?.includes("Delete"));
+
+    expect(mergeIndex).toBeGreaterThan(-1);
+    expect(deleteIndex).toBeGreaterThan(-1);
+    expect(mergeIndex).toBeLessThan(deleteIndex);
+  });
+
   it("shows an error card when loading fails", async () => {
     mockTagService.getAllTags.mockRejectedValue(new Error("boom"));
 
