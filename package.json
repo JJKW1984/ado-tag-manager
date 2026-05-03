@@ -1,5 +1,5 @@
 {
-  "name": "ado-tag-manager",
+  "name": "tagtidy-azure-boards",
   "version": "1.0.0",
   "scripts": {
     "build": "webpack --mode production",
