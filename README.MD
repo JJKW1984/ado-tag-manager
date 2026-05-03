@@ -65,8 +65,8 @@ Install the following before local development:
 ### 1. Clone and install dependencies
 
 ```bash
-git clone https://github.com/<your-org>/ado-tag-manager.git
-cd ado-tag-manager
+git clone https://github.com/<your-org>/tagtidy-azure-boards.git
+cd tagtidy-azure-boards
 pnpm install
 ```
 
@@ -165,8 +165,8 @@ npx tfx extension publish \
 Use the development manifest for private validation before production updates.
 
 This repository supports a separate development extension ID so it can coexist with production:
-- Production extension ID: `ado-tag-manager`
-- Development extension ID: `ado-tag-manager-develop`
+- Production extension ID: `tagtidy-azure-boards`
+- Development extension ID: `tagtidy-azure-boards-develop`
 
 Generate and package the development variant:
 

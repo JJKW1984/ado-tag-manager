@@ -43,10 +43,10 @@ jobs:
           TARGET="${{ github.base_ref }}"
           if [[ -z "$TARGET" ]]; then TARGET="${{ github.ref_name }}"; fi
           if [[ "$TARGET" == "main" ]]; then
-            echo "extension-id=ado-tag-manager"        >> "$GITHUB_OUTPUT"
+            echo "extension-id=tagtidy-azure-boards"        >> "$GITHUB_OUTPUT"
             echo "manifest-file=vss-extension.json"    >> "$GITHUB_OUTPUT"
           else
-            echo "extension-id=ado-tag-manager-develop"   >> "$GITHUB_OUTPUT"
+            echo "extension-id=tagtidy-azure-boards-develop"   >> "$GITHUB_OUTPUT"
             echo "manifest-file=vss-extension-dev.json"   >> "$GITHUB_OUTPUT"
           fi
 

@@ -75,7 +75,7 @@ describe("validateTagName", () => {
 - [ ] **Step 1.2 — Run tests to confirm they fail**
 
 ```bash
-cd d:/ado-tag-manager
+cd d:/tagtidy-azure-boards
 pnpm test -- src/utils/validateTagName.test.ts --verbose
 ```
 

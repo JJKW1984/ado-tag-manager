@@ -55,5 +55,5 @@ TagTidy requests the following Azure DevOps scopes:
 
 ## Support
 
-- Source code and releases: https://github.com/JJKW1984/ado-tag-manager
-- Bug reports and questions: https://github.com/JJKW1984/ado-tag-manager/issues
+- Source code and releases: https://github.com/JJKW1984/tagtidy-azure-boards
+- Bug reports and questions: https://github.com/JJKW1984/tagtidy-azure-boards/issues
