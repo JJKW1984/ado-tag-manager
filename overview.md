@@ -1,62 +1,59 @@
-# ADO Tag Manager
+# TagTidy for Azure Boards
 
-ADO Tag Manager is an Azure DevOps extension for cleaning up and standardizing Azure Boards tags across large work item sets.
-
-It is designed for teams that need safe, repeatable tag maintenance without manual edits item-by-item.
-
-## Marketplace Summary
-
-Clean up Azure Boards tags safely: merge duplicates, rename tags, and delete obsolete tags across work items.
+Keep your Azure Boards tags clean and consistent. TagTidy gives you a single hub to view, rename, merge, and delete tags across your entire organization — without touching work items one by one.
 
 ## What It Does
 
-This extension provides a management UI and API-backed operations to:
+TagTidy adds a **Tag Manager** hub to Azure Boards. From there you can:
 
-- Merge tags
-- Rename tags
-- Delete tags
+- **View all tags** in your organization with a live count of how many work items use each one
+- **Rename a tag** — the change is applied to every matching work item automatically
+- **Merge tags** — combine one or more tags into a single target tag, consolidating all work items in one step
+- **Delete tags** — remove one or more tags from every work item that carries them
+
+## Finding Tags
+
+The tag list is searchable and filterable so you can quickly find what you need:
+
+- **Search bar** — filter by any part of the tag name
+- **A–Z navigation** — jump to tags starting with a specific letter, or `#` for non-alphabetic tags
+- **Pagination** — tags load 25 at a time so the page stays fast even with large tag sets
+
+## Safe by Design
+
+Every destructive operation (merge, delete) shows a confirmation dialog before anything changes. You see exactly which tags will be affected before you commit.
+
+Rename operations apply immediately inline — useful for quick corrections without needing to open a dialog.
 
 ## Typical Use Cases
 
-- Standardize inconsistent tags (frontend, front-end, ui)
-- Consolidate duplicate tag taxonomies after team merges
-- Remove stale tags no longer used for planning or reporting
-- Keep board filters and dashboards consistent over time
-
-## Required Permissions
-
-The extension requests the following Azure DevOps scopes:
-
-- vso.work (read work item data)
-- vso.work_write (update work item tags)
-
-These permissions are required for bulk tag maintenance operations.
+- Standardize inconsistent tags created over time (e.g. `frontend`, `front-end`, `ui`)
+- Consolidate duplicate tag sets after team or project merges
+- Remove obsolete tags that no longer serve a planning or reporting purpose
+- Keep board filters and dashboard queries consistent as your taxonomy evolves
 
 ## Getting Started
 
-1. Install the extension from the Azure DevOps Marketplace.
-2. Open Azure Boards and navigate to the Tag Manager hub.
-3. Choose an operation (merge, rename, or delete).
-4. Validate the expected impact and apply the change.
+1. Install TagTidy from the Azure DevOps Marketplace.
+2. Open **Azure Boards** and select the **Tag Manager** hub from the left navigation.
+3. Browse or search for the tags you want to manage.
+4. Select one or more tags, then choose **Merge**, **Delete**, or click a tag name to **Rename** it inline.
 
-## Safety Model
+## Required Permissions
 
-- Built for organization-level governance workflows
-- Uses Azure DevOps Work Item Tracking APIs
-- Intended for controlled, auditable tag updates
+TagTidy requests the following Azure DevOps scopes:
 
-## Operational Guidance
-
-- Start with a small, low-risk tag update in your test project.
-- Standardize a tag naming convention before bulk operations.
-- Coordinate large updates with project admins to avoid confusion during active sprint planning.
+| Scope | Purpose |
+|---|---|
+| `vso.analytics` | Read tag usage counts via Azure Analytics |
+| `vso.work` | Read work item data |
+| `vso.work_write` | Update work item tags |
 
 ## Compatibility
 
 - Azure DevOps Services
-- Azure Boards and Azure Test Plans contexts
 
 ## Support
 
-- Source code: https://github.com/JJKW1984/ado-tag-manager
-- Issues and support: https://github.com/JJKW1984/ado-tag-manager/issues
+- Source code and releases: https://github.com/JJKW1984/tagtidy-azure-boards
+- Bug reports and questions: https://github.com/JJKW1984/tagtidy-azure-boards/issues
