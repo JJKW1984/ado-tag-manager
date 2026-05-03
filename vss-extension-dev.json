@@ -53,10 +53,18 @@
     {
       "path": "static",
       "addressable": true
+    },
+    {
+      "path": "overview.md"
     }
   ],
   "icons": {
     "default": "static/images/logo.png"
+  },
+  "content": {
+    "details": {
+      "path": "overview.md"
+    }
   },
   "links": {
     "source": {
@@ -64,11 +72,6 @@
     },
     "author": {
       "uri": "https://www.linkedin.com/in/josephjohnkarl/"
-    }
-  },
-  "content": {
-    "details": {
-      "path": "overview.md"
     }
   },
   "public": false,
