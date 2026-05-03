@@ -1,8 +1,8 @@
 {
   "manifestVersion": 1,
-  "id": "ado-tag-manager-develop",
+  "id": "tagtidy-azure-boards-develop",
   "version": "0.2.8",
-  "name": "ADO Tag Manager (Develop)",
+  "name": "TagTidy for Azure Boards (Develop)",
   "description": "Clean up Azure Boards tags safely: merge duplicates, rename tags, and delete obsolete tags across work items.",
   "publisher": "josephjohnkarl",
   "categories": [
