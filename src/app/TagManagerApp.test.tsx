@@ -7,11 +7,22 @@ const mockTagService = {
   deleteTagById: jest.fn(),
   renameTagById: jest.fn(),
   mergeTag: jest.fn(),
-  countTagAcrossProjects: jest.fn(),
 };
 
 jest.mock("../services/TagService", () => ({
   TagService: jest.fn(() => mockTagService),
+}));
+
+const mockTagCountCacheService = {
+  getCache: jest.fn(),
+  setCache: jest.fn(),
+  fetchCounts: jest.fn(),
+  refreshCache: jest.fn(),
+  isStaleCacheOrMissing: jest.fn(),
+};
+
+jest.mock("../services/TagCountCacheService", () => ({
+  TagCountCacheService: jest.fn(() => mockTagCountCacheService),
 }));
 
 import { TagManagerApp } from "./TagManagerApp";
@@ -20,6 +31,7 @@ describe("TagManagerApp", () => {
   beforeEach(() => {
     localStorage.clear();
     Object.values(mockTagService).forEach((fn) => fn.mockReset());
+    Object.values(mockTagCountCacheService).forEach((fn) => fn.mockReset());
 
     mockTagService.getProjectName.mockResolvedValue("Demo Project");
     mockTagService.deleteTagById.mockResolvedValue(undefined);
@@ -27,10 +39,17 @@ describe("TagManagerApp", () => {
       affectedCount: 1,
       workItemIds: [1],
     });
-    mockTagService.countTagAcrossProjects.mockResolvedValue(2);
+
+    // Default: no cache, not stale (no auto-refresh)
+    mockTagCountCacheService.getCache.mockResolvedValue(null);
+    mockTagCountCacheService.isStaleCacheOrMissing.mockReturnValue(false);
+    mockTagCountCacheService.refreshCache.mockResolvedValue({
+      counts: {},
+      lastUpdated: new Date().toISOString(),
+    });
   });
 
-  it("loads tags and renders management actions", async () => {
+  it("loads tags and renders Delete, Merge, and Refresh Counts buttons", async () => {
     mockTagService.getAllTags.mockResolvedValue([
       { id: "1", name: "alpha", url: "u" },
       { id: "2", name: "beta", url: "u" },
@@ -46,7 +65,26 @@ describe("TagManagerApp", () => {
 
     expect(screen.getByRole("button", { name: "Delete" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Merge" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Count" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Refresh Counts" })).not.toBeDisabled();
+    expect(screen.queryByRole("button", { name: /^Count/ })).toBeNull();
+  });
+
+  it("renders Merge before Delete in the command bar", async () => {
+    mockTagService.getAllTags.mockResolvedValue([]);
+
+    const { container } = render(<TagManagerApp />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Merge" })).toBeInTheDocument();
+    });
+
+    const buttons = Array.from(container.querySelectorAll("button"));
+    const mergeIndex = buttons.findIndex((button) => button.textContent?.includes("Merge"));
+    const deleteIndex = buttons.findIndex((button) => button.textContent?.includes("Delete"));
+
+    expect(mergeIndex).toBeGreaterThan(-1);
+    expect(deleteIndex).toBeGreaterThan(-1);
+    expect(mergeIndex).toBeLessThan(deleteIndex);
   });
 
   it("shows an error card when loading fails", async () => {
@@ -59,11 +97,86 @@ describe("TagManagerApp", () => {
     });
   });
 
-  it("opens count confirmation dialog when many tags are selected", async () => {
+  it("shows 'Never' as last updated when no cache exists", async () => {
+    mockTagService.getAllTags.mockResolvedValue([]);
+    mockTagCountCacheService.getCache.mockResolvedValue(null);
+
+    render(<TagManagerApp />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Last updated:/)).toBeInTheDocument();
+      expect(screen.getByText(/Never/)).toBeInTheDocument();
+    });
+  });
+
+  it("shows formatted timestamp and populates counts when cache exists", async () => {
+    mockTagService.getAllTags.mockResolvedValue([
+      { id: "1", name: "bug", url: "u" },
+    ]);
+    mockTagCountCacheService.getCache.mockResolvedValue({
+      counts: { bug: 42 },
+      lastUpdated: "2026-04-26T10:00:00.000Z",
+    });
+
+    render(<TagManagerApp />);
+
+    await waitFor(() => {
+      expect(screen.getByText("42")).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/Last updated:/)).toBeInTheDocument();
+  });
+
+  it("clicking Refresh Counts calls refreshCache and updates counts", async () => {
+    mockTagService.getAllTags.mockResolvedValue([
+      { id: "1", name: "ops", url: "u" },
+    ]);
+    mockTagCountCacheService.refreshCache.mockResolvedValue({
+      counts: { ops: 99 },
+      lastUpdated: new Date().toISOString(),
+    });
+
+    render(<TagManagerApp />);
+
+    await waitFor(() => {
+      expect(screen.getByText("ops")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh Counts" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("99")).toBeInTheDocument();
+    });
+
+    expect(mockTagCountCacheService.refreshCache).toHaveBeenCalledWith("demo-org");
+  });
+
+  it("auto-triggers background refresh when cache is stale on load", async () => {
+    mockTagService.getAllTags.mockResolvedValue([
+      { id: "1", name: "infra", url: "u" },
+    ]);
+    mockTagCountCacheService.isStaleCacheOrMissing.mockReturnValue(true);
+    mockTagCountCacheService.refreshCache.mockResolvedValue({
+      counts: { infra: 13 },
+      lastUpdated: new Date().toISOString(),
+    });
+
+    render(<TagManagerApp />);
+
+    await waitFor(() => {
+      expect(mockTagCountCacheService.refreshCache).toHaveBeenCalled();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("13")).toBeInTheDocument();
+    });
+  });
+
+  it("renders ADO pagination buttons when there are more than 25 tags", async () => {
     mockTagService.getAllTags.mockResolvedValue(
-      Array.from({ length: 11 }, (_v, i) => ({
+      Array.from({ length: 30 }, (_v, i) => ({
         id: `${i + 1}`,
-        name: `tag-${i + 1}`,
+        name: `tag-${String.fromCharCode(65 + (i % 26))}-${i + 1}`,
         url: "u",
       }))
     );
@@ -71,14 +184,22 @@ describe("TagManagerApp", () => {
     render(<TagManagerApp />);
 
     await waitFor(() => {
-      expect(screen.getByText("tag-1")).toBeInTheDocument();
+      expect(screen.getByText(/tag-A-1/)).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getAllByRole("checkbox")[0]);
-    fireEvent.click(screen.getByRole("button", { name: "Count (11)" }));
+    expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Next" })).not.toBeDisabled();
+  });
 
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByText("Count Work Items")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Count 11 tags" })).toBeInTheDocument();
+  it("uses correct icon names for Delete and Merge command bar items", async () => {
+    mockTagService.getAllTags.mockResolvedValue([]);
+
+    const { container } = render(<TagManagerApp />);
+
+    await waitFor(() => {
+      expect(container.querySelector('[data-icon="Delete"]')).not.toBeNull();
+      expect(container.querySelector('[data-icon="BranchMerge"]')).not.toBeNull();
+      expect(container.querySelector('[data-icon="NumberSymbol"]')).toBeNull();
+    });
   });
 });

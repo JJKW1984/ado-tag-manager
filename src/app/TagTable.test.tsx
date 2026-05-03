@@ -1,5 +1,6 @@
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 import { TagTable } from "./TagTable";
 
@@ -40,5 +41,58 @@ describe("TagTable", () => {
 
     expect(onToggleAll).toHaveBeenCalled();
     expect(onToggle).toHaveBeenCalledWith("1");
+  });
+});
+
+describe("TagTable — rename wiring", () => {
+  it("renders EditableTagName when onRename is provided", async () => {
+    const user = userEvent.setup();
+    const onRename = jest.fn();
+    render(
+      <TagTable
+        tags={[{ id: "1", name: "alpha", url: "u1" }]}
+        selectedIds={new Set()}
+        onToggle={jest.fn()}
+        onToggleAll={jest.fn()}
+        onRename={onRename}
+        existingNames={["alpha"]}
+      />
+    );
+    await user.dblClick(screen.getByText("alpha"));
+    expect(screen.getByRole("textbox", { name: "Edit tag name" })).toBeInTheDocument();
+  });
+
+  it("renders plain text when onRename is not provided", () => {
+    render(
+      <TagTable
+        tags={[{ id: "1", name: "alpha", url: "u1" }]}
+        selectedIds={new Set()}
+        onToggle={jest.fn()}
+        onToggleAll={jest.fn()}
+      />
+    );
+    expect(screen.getByText("alpha")).toBeInTheDocument();
+    expect(screen.queryByTitle("Rename")).not.toBeInTheDocument();
+  });
+
+  it("calls onRename with tagId and new name when rename is committed", async () => {
+    const user = userEvent.setup();
+    const onRename = jest.fn();
+    render(
+      <TagTable
+        tags={[{ id: "tag-1", name: "alpha", url: "u1" }]}
+        selectedIds={new Set()}
+        onToggle={jest.fn()}
+        onToggleAll={jest.fn()}
+        onRename={onRename}
+        existingNames={["alpha"]}
+      />
+    );
+    await user.dblClick(screen.getByText("alpha"));
+    const input = screen.getByRole("textbox", { name: "Edit tag name" });
+    await user.clear(input);
+    await user.type(input, "beta");
+    await user.keyboard("[Enter]");
+    expect(onRename).toHaveBeenCalledWith("tag-1", "beta");
   });
 });

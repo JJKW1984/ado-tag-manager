@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "ado-tag-manager",
-  "version": "0.2.7",
+  "version": "1.0.0",
   "name": "ADO Tag Manager",
   "description": "Clean up Azure Boards tags safely: merge duplicates, rename tags, and delete obsolete tags across work items.",
   "publisher": "josephjohnkarl",
@@ -42,6 +42,7 @@
     }
   ],
   "scopes": [
+    "vso.analytics",
     "vso.work",
     "vso.work_write"
   ],

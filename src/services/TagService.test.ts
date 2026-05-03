@@ -1,9 +1,6 @@
 import { TagService } from "./TagService";
 
-import {
-  mockCoreClient,
-  mockWorkItemTrackingClient,
-} from "../test/mocks/azureDevopsApiMock";
+import { mockWorkItemTrackingClient } from "../test/mocks/azureDevopsApiMock";
 import { setMockProject } from "../test/mocks/azureDevopsSdkMock";
 
 type MockResponse = {
@@ -82,25 +79,6 @@ describe("TagService", () => {
     expect(result.name).toBe("backend");
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: "PATCH" });
-  });
-
-  it("counts matching work items across projects and skips project failures", async () => {
-    mockCoreClient.getProjects.mockResolvedValue([
-      { name: "Project A" },
-      { name: "Project B" },
-      { name: "Project C" },
-    ]);
-
-    mockWorkItemTrackingClient.queryByWiql
-      .mockResolvedValueOnce({ workItems: [{ id: 1 }, { id: 2 }] })
-      .mockRejectedValueOnce(new Error("forbidden"))
-      .mockResolvedValueOnce({ workItems: [{ id: 3 }] });
-
-    const service = new TagService();
-    const count = await service.countTagAcrossProjects("bug");
-
-    expect(count).toBe(3);
-    expect(mockWorkItemTrackingClient.queryByWiql).toHaveBeenCalledTimes(3);
   });
 
   it("returns work item ids that contain a tag", async () => {

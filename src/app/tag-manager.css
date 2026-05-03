@@ -1,0 +1,48 @@
+/* ============================================================
+   Tag Manager — component styles
+   All ADO CSS tokens (var(--palette-*)) are from azure-devops-ui.
+   ============================================================ */
+
+/* Pagination row */
+.tm-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 8px 4px 4px;
+  border-top: 1px solid var(--palette-neutral-10, #e0e0e0);
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--palette-neutral-60, #555);
+}
+
+/* Loading spinner centering */
+.tm-spinner-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 32px;
+}
+
+/* Card inner flex-column layout */
+.tm-card-content {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Error message card */
+.tm-error-card {
+  /* MessageCard handles its own layout — reserved for overrides */
+}
+
+/* Refresh bar (cache status + manual refresh button) */
+.tm-refresh-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 4px 4px;
+  font-size: 13px;
+}
+
+.tm-last-updated {
+  color: var(--palette-neutral-40, #888);
+}

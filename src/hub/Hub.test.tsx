@@ -1,3 +1,5 @@
+import "@testing-library/jest-dom";
+
 const renderMock = jest.fn();
 
 jest.mock("react-dom", () => ({
@@ -25,4 +27,5 @@ describe("Hub bootstrap", () => {
     expect(renderMock).toHaveBeenCalledTimes(1);
     expect(sdkMock.mockNotifyLoadSucceeded).toHaveBeenCalledTimes(1);
   });
+
 });

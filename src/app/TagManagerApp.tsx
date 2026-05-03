@@ -1,46 +1,33 @@
 // src/app/TagManagerApp.tsx
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Card } from "azure-devops-ui/Card";
 import { Header, TitleSize } from "azure-devops-ui/Header";
 import { IHeaderCommandBarItem } from "azure-devops-ui/HeaderCommandBar";
 import { Page } from "azure-devops-ui/Page";
 import { Spinner, SpinnerSize } from "azure-devops-ui/Spinner";
 import { MessageCard, MessageCardSeverity } from "azure-devops-ui/MessageCard";
+import { Button } from "azure-devops-ui/Button";
+import { ButtonGroup } from "azure-devops-ui/ButtonGroup";
 import { TagService } from "../services/TagService";
-import { TagItem, LogEntry } from "../types";
+import * as SDK from "azure-devops-extension-sdk";
+import { TagCountCacheService } from "../services/TagCountCacheService";
+import { TagItem } from "../types";
 import { TagTable } from "./TagTable";
 import { AlphaNav } from "./AlphaNav";
 import { DeleteDialog } from "./DeleteDialog";
 import { MergeDialog } from "./MergeDialog";
-import { CountConfirmDialog } from "./CountConfirmDialog";
-import { StatusLog } from "./StatusLog";
+import "./tag-manager.css";
+import { SearchBar } from "./SearchBar";
+import { sanitizeError } from "../utils/sanitizeError";
 
 type DialogState =
   | { type: "delete"; tags: TagItem[] }
   | { type: "merge"; sources: TagItem[] }
-  | { type: "countConfirm"; tags: TagItem[] }
   | null;
 
 const tagService = new TagService();
-const COUNT_CONFIRM_THRESHOLD = 10;
+const tagCountCacheService = new TagCountCacheService();
 const PAGE_SIZE = 25;
-const LOG_STORAGE_KEY = "ado-tag-manager:activity-log";
-const LOG_MAX_ENTRIES = 200;
-
-function loadPersistedLog(): LogEntry[] {
-  try {
-    const raw = localStorage.getItem(LOG_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as Array<Omit<LogEntry, "timestamp"> & { timestamp: string }>;
-    return parsed.map((e) => ({ ...e, timestamp: new Date(e.timestamp) }));
-  } catch {
-    return [];
-  }
-}
-
-// Read once at module load so both the initial state and the ID counter seed are consistent.
-const _initialLog = loadPersistedLog();
-const _initialLogId = _initialLog.length > 0 ? Math.max(..._initialLog.map((e) => e.id)) : 0;
 
 export const TagManagerApp: React.FC = () => {
   const [tags, setTags] = useState<TagItem[]>([]);
@@ -48,43 +35,46 @@ export const TagManagerApp: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [dialog, setDialog] = useState<DialogState>(null);
-  const [logEntries, setLogEntries] = useState<LogEntry[]>(_initialLog);
   const [alphaFilter, setAlphaFilter] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
-  const [projectName, setProjectName] = useState<string>("");
-  const logIdRef = useRef(_initialLogId);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const tagsRef = useRef<TagItem[]>([]);
 
-  // Persist log whenever it changes
   useEffect(() => {
-    try {
-      const toStore = logEntries.slice(-LOG_MAX_ENTRIES);
-      localStorage.setItem(LOG_STORAGE_KEY, JSON.stringify(toStore));
-    } catch {
-      // localStorage unavailable (e.g. private browsing quota) — silently skip
-    }
-  }, [logEntries]);
+    tagsRef.current = tags;
+  }, [tags]);
 
   // --- Helpers ---
 
-  const appendLog = useCallback((message: string, status: LogEntry["status"]): number => {
-    const id = ++logIdRef.current;
-    setLogEntries((prev) => [
-      ...prev,
-      { id, timestamp: new Date(), message, status },
-    ]);
-    return id;
+  const handleRename = useCallback(async (tagId: string, newName: string) => {
+    try {
+      const updated = await tagService.renameTagById(tagId, newName);
+      setTags((prev) =>
+        prev
+          .map((t) => (t.id === tagId ? { ...t, name: updated.name } : t))
+          .sort((a, b) => a.name.localeCompare(b.name))
+      );
+    } catch (e) {
+      setError(sanitizeError(e));
+    }
   }, []);
 
-  const updateLog = useCallback((id: number, message: string, status: LogEntry["status"]) => {
-    setLogEntries((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, message, status } : e))
-    );
-  }, []);
-
-  const updateTagCount = useCallback((tagId: string, count: number) => {
-    setTags((prev) =>
-      prev.map((t) => (t.id === tagId ? { ...t, count } : t))
-    );
+  const triggerBackgroundRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      const orgName = SDK.getHost().name;
+      const cache = await tagCountCacheService.refreshCache(orgName);
+      setTags((prev) =>
+        prev.map((t) => ({ ...t, count: cache.counts[t.name.toLowerCase()] ?? 0 }))
+      );
+      setLastUpdated(cache.lastUpdated);
+    } catch (e) {
+      setError(sanitizeError(e));
+    } finally {
+      setIsRefreshing(false);
+    }
   }, []);
 
   // --- Data loading ---
@@ -93,19 +83,28 @@ export const TagManagerApp: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await tagService.getAllTags();
-      setTags(result);
+      const [result, cache] = await Promise.all([
+        tagService.getAllTags(),
+        tagCountCacheService.getCache(),
+      ]);
+      const tagsWithCounts = cache
+        ? result.map((t) => ({ ...t, count: cache.counts[t.name.toLowerCase()] ?? 0 }))
+        : result;
+      setTags(tagsWithCounts);
+      if (cache) setLastUpdated(cache.lastUpdated);
       setSelectedIds(new Set());
+      if (tagCountCacheService.isStaleCacheOrMissing(cache)) {
+        void triggerBackgroundRefresh();
+      }
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(sanitizeError(e));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [triggerBackgroundRefresh]);
 
   useEffect(() => {
     loadTags();
-    tagService.getProjectName().then(setProjectName).catch(() => {});
   }, [loadTags]);
 
   // --- Selection ---
@@ -134,26 +133,13 @@ export const TagManagerApp: React.FC = () => {
     setDialog({ type: "merge", sources: selected });
   };
 
-  const handleCountClick = () => {
-    const selected = tags.filter((t) => selectedIds.has(t.id));
-    if (selected.length > COUNT_CONFIRM_THRESHOLD) {
-      setDialog({ type: "countConfirm", tags: selected });
-    } else {
-      runCountJobs(selected);
-    }
-  };
-
   // --- Background jobs ---
-
-  const proj = projectName ? `[${projectName}] ` : "";
 
   const runDeleteJobs = async (tagsToDelete: TagItem[]) => {
     setDialog(null);
     for (const tag of tagsToDelete) {
-      const logId = appendLog(`${proj}Deleting "${tag.name}"…`, "running");
       try {
         await tagService.deleteTagById(tag.id);
-        updateLog(logId, `${proj}✓ Deleted "${tag.name}"`, "success");
         setTags((prev) => prev.filter((t) => t.id !== tag.id));
         setSelectedIds((prev) => {
           const next = new Set(prev);
@@ -161,8 +147,7 @@ export const TagManagerApp: React.FC = () => {
           return next;
         });
       } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        updateLog(logId, `${proj}✗ Failed to delete "${tag.name}": ${msg}`, "error");
+        setError(e instanceof Error ? e.message : String(e));
       }
     }
   };
@@ -171,17 +156,8 @@ export const TagManagerApp: React.FC = () => {
     setDialog(null);
     const failedSourceIds = new Set<string>();
     for (const source of sources) {
-      const logId = appendLog(
-        `${proj}Merging "${source.name}" → "${targetName}"…`,
-        "running"
-      );
       try {
-        const result = await tagService.mergeTag(source.id, source.name, targetName);
-        updateLog(
-          logId,
-          `${proj}✓ Merged "${source.name}" → "${targetName}" (${result.affectedCount} work item${result.affectedCount !== 1 ? "s" : ""} updated)`,
-          "success"
-        );
+        await tagService.mergeTag(source.id, source.name, targetName);
         setTags((prev) => prev.filter((t) => t.id !== source.id));
         setSelectedIds((prev) => {
           const next = new Set(prev);
@@ -189,8 +165,7 @@ export const TagManagerApp: React.FC = () => {
           return next;
         });
       } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        updateLog(logId, `${proj}✗ Failed to merge "${source.name}": ${msg}`, "error");
+        setError(e instanceof Error ? e.message : String(e));
         failedSourceIds.add(source.id);
       }
     }
@@ -202,26 +177,6 @@ export const TagManagerApp: React.FC = () => {
     }
   };
 
-  const runCountJobs = async (tagsToCount: TagItem[]) => {
-    setDialog(null);
-    // Mark each as counting (-1 sentinel)
-    for (const tag of tagsToCount) {
-      updateTagCount(tag.id, -1);
-    }
-    for (const tag of tagsToCount) {
-      const logId = appendLog(`${proj}Counting "${tag.name}" across all projects…`, "running");
-      try {
-        const count = await tagService.countTagAcrossProjects(tag.name);
-        updateTagCount(tag.id, count);
-        updateLog(logId, `${proj}✓ "${tag.name}" — ${count} work item${count !== 1 ? "s" : ""}`, "success");
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        updateTagCount(tag.id, 0);
-        updateLog(logId, `${proj}✗ Failed to count "${tag.name}": ${msg}`, "error");
-      }
-    }
-  };
-
   // --- Alpha filter + paging ---
 
   const handleAlphaFilter = (letter: string | null) => {
@@ -229,16 +184,28 @@ export const TagManagerApp: React.FC = () => {
     setCurrentPage(0);
   };
 
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(0);
+  };
+
   // --- Render ---
 
+  const searchFiltered = searchQuery.trim()
+    ? tags.filter((t) =>
+        t.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+      )
+    : tags;
+  const existingNames = useMemo(() => tags.map((t) => t.name), [tags]);
+
   const filteredTags = alphaFilter
-    ? tags.filter((t) => {
+    ? searchFiltered.filter((t) => {
         const ch = t.name[0]?.toUpperCase();
         return alphaFilter === "#"
           ? !(ch >= "A" && ch <= "Z")
           : ch === alphaFilter;
       })
-    : tags;
+    : searchFiltered;
 
   const totalPages = Math.max(1, Math.ceil(filteredTags.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, totalPages - 1);
@@ -248,24 +215,19 @@ export const TagManagerApp: React.FC = () => {
   const sel = n > 0 ? ` (${n})` : "";
   const commandBarItems: IHeaderCommandBarItem[] = [
     {
-      id: "delete",
-      text: `Delete${sel}`,
-      disabled: n === 0,
-      onActivate: handleDeleteClick,
-      important: true,
-    },
-    {
       id: "merge",
       text: `Merge${sel}`,
+      iconProps: { iconName: "BranchMerge" },
       disabled: n === 0,
       onActivate: handleMergeClick,
       important: true,
     },
     {
-      id: "count",
-      text: `Count${sel}`,
+      id: "delete",
+      text: `Delete${sel}`,
+      iconProps: { iconName: "Delete" },
       disabled: n === 0,
-      onActivate: handleCountClick,
+      onActivate: handleDeleteClick,
       important: true,
     },
   ];
@@ -281,7 +243,7 @@ export const TagManagerApp: React.FC = () => {
       <div className="page-content">
         {error && (
           <MessageCard
-            className="tag-manager-error"
+            className="tm-error-card"
             severity={MessageCardSeverity.Error}
             onDismiss={() => setError(null)}
           >
@@ -289,14 +251,30 @@ export const TagManagerApp: React.FC = () => {
           </MessageCard>
         )}
         <Card>
-          <div style={{ display: "flex", flexDirection: "column" }}>
+          <div className="tm-card-content">
+            <SearchBar value={searchQuery} onChange={handleSearchChange} />
             <AlphaNav
-              tags={tags}
+              tags={searchFiltered}
               activeFilter={alphaFilter}
               onFilter={handleAlphaFilter}
             />
+            <div className="tm-refresh-bar">
+              <span className="tm-last-updated">
+                Last updated:{" "}
+                {lastUpdated ? new Date(lastUpdated).toLocaleString() : "Never"}
+              </span>
+              {isRefreshing && (
+                <Spinner size={SpinnerSize.small} label="Refreshing…" />
+              )}
+              <Button
+                text="Refresh Counts"
+                iconProps={{ iconName: "Refresh" }}
+                disabled={isRefreshing}
+                onClick={() => void triggerBackgroundRefresh()}
+              />
+            </div>
             {loading ? (
-              <div style={{ display: "flex", justifyContent: "center", padding: "32px" }}>
+              <div className="tm-spinner-wrapper">
                 <Spinner size={SpinnerSize.large} label="Loading tags…" />
               </div>
             ) : (
@@ -305,54 +283,36 @@ export const TagManagerApp: React.FC = () => {
                 selectedIds={selectedIds}
                 onToggle={handleToggle}
                 onToggleAll={handleToggleAll}
+                onRename={handleRename}
+                existingNames={existingNames}
               />
             )}
             {!loading && totalPages > 1 && (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "flex-end",
-                  gap: "12px",
-                  padding: "8px 4px 4px",
-                  borderTop: "1px solid var(--palette-neutral-10, #e0e0e0)",
-                  marginTop: "4px",
-                  fontSize: "13px",
-                  color: "var(--palette-neutral-60, #555)",
-                }}
-              >
-                <button
-                  disabled={safePage === 0}
-                  onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-                  style={{
-                    border: "none", background: "none", cursor: safePage === 0 ? "default" : "pointer",
-                    color: safePage === 0 ? "var(--palette-neutral-20, #ccc)" : "var(--communication-foreground, #0078d4)",
-                    fontSize: "13px", padding: "2px 4px",
-                  }}
-                >
-                  ← Previous
-                </button>
+              <div className="tm-pagination">
                 <span>
                   Page {safePage + 1} of {totalPages}
                   {" "}({filteredTags.length} tag{filteredTags.length !== 1 ? "s" : ""})
                 </span>
-                <button
-                  disabled={safePage >= totalPages - 1}
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
-                  style={{
-                    border: "none", background: "none",
-                    cursor: safePage >= totalPages - 1 ? "default" : "pointer",
-                    color: safePage >= totalPages - 1 ? "var(--palette-neutral-20, #ccc)" : "var(--communication-foreground, #0078d4)",
-                    fontSize: "13px", padding: "2px 4px",
-                  }}
-                >
-                  Next →
-                </button>
+                <ButtonGroup>
+                  <Button
+                    subtle={true}
+                    text="Previous"
+                    iconProps={{ iconName: "ChevronLeft" }}
+                    disabled={safePage === 0}
+                    onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                  />
+                  <Button
+                    subtle={true}
+                    text="Next"
+                    iconProps={{ iconName: "ChevronRight" }}
+                    disabled={safePage >= totalPages - 1}
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+                  />
+                </ButtonGroup>
               </div>
             )}
           </div>
         </Card>
-        <StatusLog entries={logEntries} />
       </div>
 
       {dialog?.type === "delete" && (
@@ -370,13 +330,7 @@ export const TagManagerApp: React.FC = () => {
           onCancel={() => setDialog(null)}
         />
       )}
-      {dialog?.type === "countConfirm" && (
-        <CountConfirmDialog
-          tags={dialog.tags}
-          onConfirm={() => runCountJobs(dialog.tags)}
-          onCancel={() => setDialog(null)}
-        />
-      )}
+
     </Page>
   );
 };

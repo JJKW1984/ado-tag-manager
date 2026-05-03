@@ -38,6 +38,7 @@ interface HeaderItem {
   text: string;
   disabled?: boolean;
   onActivate?: () => void;
+  iconProps?: { iconName: string };
 }
 
 export const Header: React.FC<{
@@ -52,6 +53,7 @@ export const Header: React.FC<{
       {commandBarItems.map((item) => (
         <button
           key={item.id}
+          data-icon={item.iconProps?.iconName}
           disabled={item.disabled}
           onClick={() => item.onActivate?.()}
         >
@@ -200,3 +202,76 @@ export function Table<T>(props: {
     </table>
   );
 }
+
+// ---- Tabs ----
+const TabBarContext = React.createContext<(id: string) => void>(() => {});
+
+export const TabSize = {
+  Compact: "compact",
+  Tall: "tall",
+  LargeLink: "large-link",
+};
+
+export const TabBar: React.FC<{
+  selectedTabId?: string;
+  onSelectedTabChanged: (tabId: string) => void;
+  tabSize?: string;
+  children?: React.ReactNode;
+}> = ({ children, onSelectedTabChanged }) => (
+  <TabBarContext.Provider value={onSelectedTabChanged}>
+    <div data-testid="ado-tab-bar">{children}</div>
+  </TabBarContext.Provider>
+);
+
+export const Tab: React.FC<{
+  id: string;
+  name?: string;
+  disabled?: boolean;
+}> = ({ id, name }) => {
+  const onTabChanged = React.useContext(TabBarContext);
+  return (
+    <button data-testid={`ado-tab-${id}`} onClick={() => onTabChanged(id)}>
+      {name}
+    </button>
+  );
+};
+
+// ---- Button / ButtonGroup ----
+export const Button: React.FC<{
+  text?: string;
+  subtle?: boolean;
+  disabled?: boolean;
+  onClick?: () => void;
+  iconProps?: { iconName: string };
+}> = ({ text, disabled, onClick }) => (
+  <button disabled={disabled} onClick={onClick}>
+    {text}
+  </button>
+);
+
+export const ButtonGroup: React.FC<React.PropsWithChildren<unknown>> = ({
+  children,
+}) => <div data-testid="ado-button-group">{children}</div>;
+
+// ---- Pill ----
+export const PillSize = {
+  compact: 0,
+  regular: 1,
+  large: 2,
+};
+
+export const PillVariant = {
+  standard: 0,
+  outlined: 1,
+  colored: 2,
+  themedStandard: 3,
+};
+
+export const Pill: React.FC<
+  React.PropsWithChildren<{
+    size?: number;
+    variant?: number;
+    iconProps?: { iconName: string };
+    className?: string;
+  }>
+> = ({ children }) => <span data-testid="pill">{children}</span>;
