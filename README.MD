@@ -65,8 +65,8 @@ Install the following before local development:
 ### 1. Clone and install dependencies
 
 ```bash
-git clone https://github.com/<your-org>/ado-tag-manager.git
-cd ado-tag-manager
+git clone https://github.com/<your-org>/tagtidy-azure-boards.git
+cd tagtidy-azure-boards
 pnpm install
 ```
 
