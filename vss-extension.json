@@ -1,7 +1,7 @@
 {
   "manifestVersion": 1,
   "id": "tag-toolkit-azure-boards",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "Tag Toolkit for Azure Boards",
   "description": "Tag Toolkit for Azure Boards helps you clean up Azure Boards tags safely: merge duplicates, rename tags, and delete obsolete tags across work items.",
   "publisher": "josephjohnkarl",
@@ -53,9 +53,6 @@
     {
       "path": "static",
       "addressable": true
-    },
-    {
-      "path": "overview.md"
     }
   ],
   "icons": {
