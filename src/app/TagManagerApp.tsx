@@ -235,7 +235,7 @@ export const TagManagerApp: React.FC = () => {
   return (
     <Page className="tag-manager-page">
       <Header
-        title="Tag Manager"
+        title="Tag Toolkit"
         titleSize={TitleSize.Large}
         description="Manage work item tags across this project."
         commandBarItems={commandBarItems}

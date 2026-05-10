@@ -1,9 +1,9 @@
 {
   "manifestVersion": 1,
-  "id": "tagtidy-azure-boards",
+  "id": "tag-toolkit-azure-boards",
   "version": "1.0.0",
-  "name": "TagTidy for Azure Boards",
-  "description": "Clean up Azure Boards tags safely: merge duplicates, rename tags, and delete obsolete tags across work items.",
+  "name": "Tag Toolkit for Azure Boards",
+  "description": "Tag Toolkit for Azure Boards helps you clean up Azure Boards tags safely: merge duplicates, rename tags, and delete obsolete tags across work items.",
   "publisher": "josephjohnkarl",
   "categories": [
     "Azure Boards",
@@ -12,7 +12,7 @@
   "tags": [
     "tags",
     "work items",
-    "tag manager",
+    "tag toolkit",
     "tag cleanup",
     "merge tags",
     "delete tags",
@@ -34,7 +34,7 @@
         "ms.vss-work-web.work-hub-group"
       ],
       "properties": {
-        "name": "Tag Manager",
+        "name": "Tag Toolkit",
         "order": 99,
         "uri": "dist/hub.html"
       }
@@ -68,7 +68,7 @@
   },
   "links": {
     "source": {
-      "uri": "https://github.com/JJKW1984/tagtidy-azure-boards"
+      "uri": "https://github.com/JJKW1984/ado-tag-manager"
     },
     "author": {
       "uri": "https://www.linkedin.com/in/josephjohnkarl/"
