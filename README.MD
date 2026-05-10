@@ -1,6 +1,6 @@
-# TagTidy for Azure Boards
+# Tag Toolkit for Azure Boards
 
-Developer guide for building, testing, packaging, and publishing the TagTidy Azure DevOps extension.
+Developer guide for building, testing, packaging, and publishing the Tag Toolkit for Azure Boards extension.
 
 For Marketplace listing content, see `overview.md`.
 
@@ -165,8 +165,8 @@ npx tfx extension publish \
 Use the development manifest for private validation before production updates.
 
 This repository supports a separate development extension ID so it can coexist with production:
-- Production extension ID: `tagtidy-azure-boards`
-- Development extension ID: `tagtidy-azure-boards-develop`
+- Production extension ID: `tag-toolkit-azure-boards`
+- Development extension ID: `tag-toolkit-azure-boards-develop`
 
 Generate and package the development variant:
 

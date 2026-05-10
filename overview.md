@@ -1,10 +1,10 @@
-# TagTidy for Azure Boards
+# Tag Toolkit for Azure Boards
 
-Keep your Azure Boards tags clean and consistent. TagTidy gives you a single hub to view, rename, merge, and delete tags across your entire organization — without touching work items one by one.
+Keep your Azure Boards tags clean and consistent. Tag Toolkit gives you a single hub to view, rename, merge, and delete tags across your entire organization — without touching work items one by one.
 
 ## What It Does
 
-TagTidy adds a **Tag Manager** hub to Azure Boards. From there you can:
+Tag Toolkit adds a **Tag Toolkit** hub to Azure Boards. From there you can:
 
 - **View all tags** in your organization with a live count of how many work items use each one
 - **Rename a tag** — the change is applied to every matching work item automatically
@@ -34,14 +34,14 @@ Rename operations apply immediately inline — useful for quick corrections with
 
 ## Getting Started
 
-1. Install TagTidy from the Azure DevOps Marketplace.
-2. Open **Azure Boards** and select the **Tag Manager** hub from the left navigation.
+1. Install Tag Toolkit from the Azure DevOps Marketplace.
+2. Open **Azure Boards** and select the **Tag Toolkit** hub from the left navigation.
 3. Browse or search for the tags you want to manage.
 4. Select one or more tags, then choose **Merge**, **Delete**, or click a tag name to **Rename** it inline.
 
 ## Required Permissions
 
-TagTidy requests the following Azure DevOps scopes:
+Tag Toolkit requests the following Azure DevOps scopes:
 
 | Scope | Purpose |
 |---|---|
@@ -55,5 +55,5 @@ TagTidy requests the following Azure DevOps scopes:
 
 ## Support
 
-- Source code and releases: https://github.com/JJKW1984/tagtidy-azure-boards
-- Bug reports and questions: https://github.com/JJKW1984/tagtidy-azure-boards/issues
+- Source code and releases: https://github.com/JJKW1984/ado-tag-manager
+- Bug reports and questions: https://github.com/JJKW1984/ado-tag-manager/issues

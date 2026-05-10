@@ -1,5 +1,5 @@
 {
-  "name": "tagtidy-azure-boards",
+  "name": "tag-toolkit-azure-boards",
   "version": "1.0.0",
   "scripts": {
     "build": "webpack --mode production",
