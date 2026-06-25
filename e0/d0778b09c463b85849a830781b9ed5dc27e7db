@@ -1,0 +1,22 @@
+src/services/TagService.ts
+  s_92e149cf3c1c24::t_fda739376a4f06 9-14
+  s_92e149cf3c1c24::t_99f31042782a8e 7-8
+src/services/TagService.test.ts
+  s_92e149cf3c1c24::t_3d329e73370388 95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.10",
+  "base_commit_sha": "e0d0778b09c463b85849a830781b9ed5dc27e7db",
+  "prompts": {},
+  "sessions": {
+    "s_92e149cf3c1c24": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f1622a18-4451-4155-a06a-56bbb574f8c1",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "JJKW1984 <joseph.workman@gmail.com>"
+    }
+  }
+}
