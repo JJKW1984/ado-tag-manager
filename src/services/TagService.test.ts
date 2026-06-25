@@ -92,27 +92,116 @@ describe("TagService", () => {
     expect(ids).toEqual([100, 101]);
   });
 
-  it("merges source tags into target and deletes source tag", async () => {
+  it("adds target to work items without removing source, then deletes source", async () => {
     mockWorkItemTrackingClient.queryByWiql.mockResolvedValue({
       workItems: [{ id: 10 }, { id: 11 }],
     });
-
     mockWorkItemTrackingClient.getWorkItemsBatch.mockResolvedValue([
       { id: 10, fields: { "System.Tags": "Old; Alpha" } },
       { id: 11, fields: { "System.Tags": "old; New" } },
     ]);
-
     mockWorkItemTrackingClient.updateWorkItem.mockResolvedValue({});
     fetchMock.mockResolvedValue(createDeleteResponse());
 
     const service = new TagService();
-    const result = await service.mergeTag("old-id", "Old", "New");
+    const source = { id: "old-id", name: "Old", url: "u" };
+    const result = await service.mergeTag(source.id, source.name, "New");
 
-    expect(result.affectedCount).toBe(2);
-    expect(result.workItemIds).toEqual([10, 11]);
-    expect(mockWorkItemTrackingClient.updateWorkItem).toHaveBeenCalledTimes(2);
+    // id 11 already has "New" (case-insensitive) -> unchanged -> skipped.
+    expect(result.affectedCount).toBe(1);
+    expect(result.workItemIds).toEqual([10]);
+    expect(mockWorkItemTrackingClient.updateWorkItem).toHaveBeenCalledTimes(1);
+
+    // PATCH adds target and KEEPS source ("Old" not stripped).
+    const patchOps = mockWorkItemTrackingClient.updateWorkItem.mock.calls[0][0] as Array<{
+      value: string;
+    }>;
+    const tagValue = patchOps[0].value.toLowerCase();
+    expect(tagValue).toContain("old");
+    expect(tagValue).toContain("new");
+
+    // Source removal comes from the cascade delete.
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: "DELETE" });
+  });
+
+  it("runs all additive updates before any source delete (whole-batch atomic)", async () => {
+    const order: string[] = [];
+    mockWorkItemTrackingClient.queryByWiql
+      .mockResolvedValueOnce({ workItems: [{ id: 1 }] })
+      .mockResolvedValueOnce({ workItems: [{ id: 2 }] });
+    mockWorkItemTrackingClient.getWorkItemsBatch
+      .mockResolvedValueOnce([{ id: 1, fields: { "System.Tags": "A" } }])
+      .mockResolvedValueOnce([{ id: 2, fields: { "System.Tags": "B" } }]);
+    mockWorkItemTrackingClient.updateWorkItem.mockImplementation(async () => {
+      order.push("update");
+      return {};
+    });
+    fetchMock.mockImplementation(async () => {
+      order.push("delete");
+      return createDeleteResponse();
+    });
+
+    const service = new TagService();
+    await service.mergeTags(
+      [
+        { id: "a", name: "A", url: "u" },
+        { id: "b", name: "B", url: "u" },
+      ],
+      "Target"
+    );
+
+    // Two updates first, then two deletes — no interleaving.
+    expect(order).toEqual(["update", "update", "delete", "delete"]);
+  });
+
+  it("does not delete a source whose additive update failed", async () => {
+    mockWorkItemTrackingClient.queryByWiql
+      .mockResolvedValueOnce({ workItems: [{ id: 1 }] })
+      .mockResolvedValueOnce({ workItems: [{ id: 2 }] });
+    mockWorkItemTrackingClient.getWorkItemsBatch
+      .mockResolvedValueOnce([{ id: 1, fields: { "System.Tags": "A" } }])
+      .mockResolvedValueOnce([{ id: 2, fields: { "System.Tags": "B" } }]);
+    mockWorkItemTrackingClient.updateWorkItem.mockImplementation(async (_ops, id) => {
+      if (id === 2) throw new Error("patch failed");
+      return {};
+    });
+    fetchMock.mockResolvedValue(createDeleteResponse());
+
+    const service = new TagService();
+    const res = await service.mergeTags(
+      [
+        { id: "a", name: "A", url: "u" },
+        { id: "b", name: "B", url: "u" },
+      ],
+      "Target"
+    );
+
+    expect(res.succeeded.map((s) => s.source.id)).toEqual(["a"]);
+    expect(res.failed.map((f) => f.source.id)).toEqual(["b"]);
+    // Exactly one DELETE — only for source "a".
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("marks a source failed when its delete fails after additions succeed", async () => {
+    mockWorkItemTrackingClient.queryByWiql.mockResolvedValue({ workItems: [{ id: 1 }] });
+    mockWorkItemTrackingClient.getWorkItemsBatch.mockResolvedValue([
+      { id: 1, fields: { "System.Tags": "A" } },
+    ]);
+    mockWorkItemTrackingClient.updateWorkItem.mockResolvedValue({});
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: "Server Error",
+      json: async () => ({}),
+      text: async () => "boom",
+    });
+
+    const service = new TagService();
+    const res = await service.mergeTags([{ id: "a", name: "A", url: "u" }], "Target");
+
+    expect(res.succeeded).toEqual([]);
+    expect(res.failed.map((f) => f.source.id)).toEqual(["a"]);
   });
 
   it("does not patch work items when transformed tag set is unchanged", async () => {

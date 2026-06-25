@@ -4,7 +4,14 @@ import { getClient } from "azure-devops-extension-api";
 import { WorkItemTrackingRestClient } from "azure-devops-extension-api/WorkItemTracking";
 import { CommonServiceIds, IProjectPageService } from "azure-devops-extension-api/Common/CommonServices";
 import { WorkItemBatchGetRequest } from "azure-devops-extension-api/WorkItemTracking";
-import { TagItem, TagOperationResult } from "../types";
+import { sanitizeError } from "../utils/sanitizeError";
+import {
+  TagItem,
+  TagOperationResult,
+  BatchMergeResult,
+  MergeSourceResult,
+  MergeSourceFailure,
+} from "../types";
 
 // ADO stores tags as a semicolon+space separated string: "bug; frontend; P1"
 function parseTags(raw: string): string[] {
@@ -118,27 +125,66 @@ export class TagService {
   }
 
   /**
-   * Merges sourceTag into targetTag in the current project:
-   * 1. Patches all work items with sourceTag to add targetTag and remove sourceTag.
-   * 2. Deletes the source tag definition via the Tags API.
+   * Merges one or more source tags into targetName, atomically:
+   * Phase 1 (additive) — add targetName to every affected work item across ALL
+   *   sources; nothing is removed.
+   * Phase 2 (destructive) — delete only the source tags whose additions all
+   *   succeeded. ADO cascades each delete to strip that source tag everywhere.
+   * Sources that hit any failure are returned in `failed` (not deleted) for retry.
+   */
+  async mergeTags(
+    sources: TagItem[],
+    targetName: string
+  ): Promise<BatchMergeResult> {
+    const addTarget = (tags: string[]): string[] =>
+      tags.some((t) => t.toLowerCase() === targetName.toLowerCase())
+        ? tags
+        : [...tags, targetName];
+
+    const succeeded: MergeSourceResult[] = [];
+    const failed: MergeSourceFailure[] = [];
+
+    // Phase 1 — additive across the whole batch (no deletes yet).
+    for (const source of sources) {
+      try {
+        const ids = await this.getWorkItemsWithTag(source.name);
+        const result = await this.applyTagUpdate(ids, addTarget);
+        succeeded.push({ source, ...result });
+      } catch (e) {
+        failed.push({ source, error: sanitizeError(e) });
+      }
+    }
+
+    // Phase 2 — delete only sources whose additions fully succeeded.
+    for (const entry of [...succeeded]) {
+      try {
+        await this.deleteTagById(entry.source.id);
+      } catch (e) {
+        // Additions done but delete failed: treat as failed (retry is idempotent).
+        succeeded.splice(succeeded.indexOf(entry), 1);
+        failed.push({ source: entry.source, error: sanitizeError(e) });
+      }
+    }
+
+    return { succeeded, failed };
+  }
+
+  /**
+   * Single-source convenience wrapper around mergeTags.
+   * Throws if the source failed to merge (preserves prior call-site semantics).
    */
   async mergeTag(
     sourceId: string,
     sourceName: string,
     targetName: string
   ): Promise<TagOperationResult> {
-    const ids = await this.getWorkItemsWithTag(sourceName);
-    const result = await this.applyTagUpdate(ids, (tags) => {
-      const without = tags.filter(
-        (t) => t.toLowerCase() !== sourceName.toLowerCase()
-      );
-      const hasTarget = without.some(
-        (t) => t.toLowerCase() === targetName.toLowerCase()
-      );
-      return hasTarget ? without : [...without, targetName];
-    });
-    await this.deleteTagById(sourceId);
-    return result;
+    const source: TagItem = { id: sourceId, name: sourceName, url: "" };
+    const { succeeded, failed } = await this.mergeTags([source], targetName);
+    if (failed.length > 0) {
+      throw new Error(failed[0].error);
+    }
+    const { affectedCount, workItemIds } = succeeded[0];
+    return { affectedCount, workItemIds };
   }
 
   /**
