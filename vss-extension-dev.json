@@ -28,7 +28,7 @@
   ],
   "contributions": [
     {
-      "id": "tag-manager-hub-develop",
+      "id": "tag-manager-hub",
       "type": "ms.vss-web.hub",
       "targets": [
         "ms.vss-work-web.work-hub-group"
