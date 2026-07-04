@@ -1,0 +1,19 @@
+docs/superpowers/plans/2026-06-24-atomic-tag-merge.md
+  s_0a65e78204c8a9::t_73d497dd6a2b7b 1-395
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "98d8b7e22a9d5795ae6ee1cf2ed72159833655ff",
+  "prompts": {},
+  "sessions": {
+    "s_0a65e78204c8a9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "73743f3e-8c3b-4dae-b253-0233c43ce611",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "JJKW1984 <joseph.workman@gmail.com>"
+    }
+  }
+}
