@@ -1,0 +1,19 @@
+docs/superpowers/specs/2026-07-04-branch-based-publish-share-design.md
+  s_5cf58c20170237::t_46288c7474cb28 1-98
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "777ad1bbca9c296ff1d8a94f9055301db9dd31d4",
+  "prompts": {},
+  "sessions": {
+    "s_5cf58c20170237": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b5c2400a-b85a-4270-a4ec-71598516537b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "JJKW1984 <joseph.workman@gmail.com>"
+    }
+  }
+}
