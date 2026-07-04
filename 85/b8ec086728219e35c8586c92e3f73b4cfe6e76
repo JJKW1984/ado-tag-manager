@@ -1,0 +1,19 @@
+docs/superpowers/plans/2026-07-04-branch-based-publish-share.md
+  s_5cf58c20170237::t_c5dfaa3a0bd11d 1-377
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "85b8ec086728219e35c8586c92e3f73b4cfe6e76",
+  "prompts": {},
+  "sessions": {
+    "s_5cf58c20170237": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b5c2400a-b85a-4270-a4ec-71598516537b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "JJKW1984 <joseph.workman@gmail.com>"
+    }
+  }
+}
