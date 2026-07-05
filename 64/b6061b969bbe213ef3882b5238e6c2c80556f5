@@ -1,0 +1,30 @@
+src/app/TagManagerApp.test.tsx
+  s_7c02af80491bcf::t_e8053522623d4d 10
+  s_3a96b7637dd045::t_406dbe542e0680 43,92-124
+src/app/TagManagerApp.tsx
+  s_3a96b7637dd045::t_e08a7883ac3936 325-332
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "64b6061b969bbe213ef3882b5238e6c2c80556f5",
+  "prompts": {},
+  "sessions": {
+    "s_3a96b7637dd045": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-abd484bf653be226a",
+        "model": "unknown"
+      },
+      "human_author": "JJKW1984 <joseph.workman@gmail.com>"
+    },
+    "s_7c02af80491bcf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b9e45124-32a3-4769-8703-6240289896d8",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "JJKW1984 <joseph.workman@gmail.com>"
+    }
+  }
+}
