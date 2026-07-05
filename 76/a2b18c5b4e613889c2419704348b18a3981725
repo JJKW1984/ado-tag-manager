@@ -1,0 +1,31 @@
+scripts/resolve-manifest.sh
+  s_5cf58c20170237::t_a7514f51bfb0a5 1-38
+scripts/resolve-manifest.test.sh
+  s_5cf58c20170237::t_6717c698013fde 1-49
+.github/workflows/build.yml
+  s_cf8aacfd89e2f8::t_ff0a33f431ba4d 42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "76a2b18c5b4e613889c2419704348b18a3981725",
+  "prompts": {},
+  "sessions": {
+    "s_5cf58c20170237": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b5c2400a-b85a-4270-a4ec-71598516537b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "JJKW1984 <joseph.workman@gmail.com>"
+    },
+    "s_cf8aacfd89e2f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a3b01a715afea42a1",
+        "model": "unknown"
+      },
+      "human_author": "JJKW1984 <joseph.workman@gmail.com>"
+    }
+  }
+}
