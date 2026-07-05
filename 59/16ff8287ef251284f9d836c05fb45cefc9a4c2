@@ -1,0 +1,19 @@
+docs/superpowers/plans/2026-07-04-merge-target-pill.md
+  s_7c02af80491bcf::t_785c3bf09c2122 1-507
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "5916ff8287ef251284f9d836c05fb45cefc9a4c2",
+  "prompts": {},
+  "sessions": {
+    "s_7c02af80491bcf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b9e45124-32a3-4769-8703-6240289896d8",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "JJKW1984 <joseph.workman@gmail.com>"
+    }
+  }
+}
