@@ -1,0 +1,45 @@
+src/app/MergeDialog.test.tsx
+  s_7c02af80491bcf::t_cd6fc820b94c26 3,68-97,101-104,106-109,111-113,115-116,118-119,128-129,131,133-135,143-147,149-156,160-162
+  s_7c02af80491bcf::t_6cb009bea96d50 98-100
+  s_7c02af80491bcf::t_978ed9ad9112c2 105
+  s_7c02af80491bcf::t_8688aea43611d5 110
+  s_7c02af80491bcf::t_b2fd46d53e8475 114
+  s_7c02af80491bcf::t_6d60c0e008ba06 117
+  s_7c02af80491bcf::t_2c22830e560b01 120-122,125-127
+  s_7c02af80491bcf::t_8d24015bc2a936 130
+  s_7c02af80491bcf::t_e16c6917cdff01 132
+  s_7c02af80491bcf::t_92012c93615a7c 136-138,140-142
+  s_7c02af80491bcf::t_3ba7a76de3d06f 148
+  s_7c02af80491bcf::t_520ead8bc289f3 157-159
+  s_7c02af80491bcf::t_ae104a77b77b3c 163
+  s_11b12e386045f8::t_99912c10ed7ce7 123-124,139
+src/app/MergeDialog.tsx
+  s_7c02af80491bcf::t_a1f1e21e8a8ed3 41-42,45-50
+  s_11b12e386045f8::t_45a91c2b5f8d4d 62-79,129,132-157
+src/test/mocks/modules/azureDevopsUi.tsx
+  s_11b12e386045f8::t_8391ad142ef178 277-281
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "36fdcb7b7bd783dd6f1ffbf37c13f6cc752b0015",
+  "prompts": {},
+  "sessions": {
+    "s_11b12e386045f8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a053c930cdb106f20",
+        "model": "unknown"
+      },
+      "human_author": "JJKW1984 <joseph.workman@gmail.com>"
+    },
+    "s_7c02af80491bcf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b9e45124-32a3-4769-8703-6240289896d8",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "JJKW1984 <joseph.workman@gmail.com>"
+    }
+  }
+}
