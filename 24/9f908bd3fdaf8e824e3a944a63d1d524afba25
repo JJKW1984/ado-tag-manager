@@ -1,0 +1,19 @@
+docs/superpowers/specs/2026-07-04-merge-target-pill-design.md
+  s_7c02af80491bcf::t_910d9314404565 1-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "249f908bd3fdaf8e824e3a944a63d1d524afba25",
+  "prompts": {},
+  "sessions": {
+    "s_7c02af80491bcf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b9e45124-32a3-4769-8703-6240289896d8",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "JJKW1984 <joseph.workman@gmail.com>"
+    }
+  }
+}
