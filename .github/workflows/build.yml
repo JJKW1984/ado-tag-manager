@@ -112,4 +112,14 @@ jobs:
         with:
           auth-type: pat
           token: ${{ secrets.MARKETPLACE_TOKEN }}
-          vsix-file: ${{ steps.package.outputs.vsix-file }} 
+          vsix-file: ${{ steps.package.outputs.vsix-file }}
+
+      - name: Share with organizations
+        if: steps.resolve-manifest.outputs.path == 'share'
+        uses: jessehouwing/azdo-marketplace/share@main
+        with:
+          auth-type: pat
+          token: ${{ secrets.MARKETPLACE_TOKEN }}
+          publisher-id: ${{ env.PUBLISHER_ID }}
+          extension-id: ${{ steps.resolve-manifest.outputs.extension-id }}
+          accounts: ${{ vars.SHARE_ACCOUNTS }}
