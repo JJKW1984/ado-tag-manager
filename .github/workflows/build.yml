@@ -39,16 +39,7 @@ jobs:
       - id: resolve-manifest
         name: Resolve manifest and extension ID
         shell: bash
-        run: |
-          TARGET="${{ github.base_ref }}"
-          if [[ -z "$TARGET" ]]; then TARGET="${{ github.ref_name }}"; fi
-          if [[ "$TARGET" == "main" ]]; then
-            echo "extension-id=tag-toolkit-azure-boards"        >> "$GITHUB_OUTPUT"
-            echo "manifest-file=vss-extension.json"    >> "$GITHUB_OUTPUT"
-          else
-            echo "extension-id=tag-toolkit-azure-boards-develop"   >> "$GITHUB_OUTPUT"
-            echo "manifest-file=vss-extension-dev.json"   >> "$GITHUB_OUTPUT"
-          fi
+        run: scripts/resolve-manifest.sh "${{ github.base_ref }}" "${{ github.ref_name }}"
 
       - name: Install dependencies
         run: pnpm install
