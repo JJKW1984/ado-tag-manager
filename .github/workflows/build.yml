@@ -39,7 +39,7 @@ jobs:
       - id: resolve-manifest
         name: Resolve manifest and extension ID
         shell: bash
-        run: scripts/resolve-manifest.sh "${{ github.base_ref }}" "${{ github.ref_name }}"
+        run: bash scripts/resolve-manifest.sh "${{ github.base_ref }}" "${{ github.ref_name }}"
 
       - name: Install dependencies
         run: pnpm install
