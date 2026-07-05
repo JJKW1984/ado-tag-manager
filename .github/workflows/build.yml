@@ -115,7 +115,7 @@ jobs:
           vsix-file: ${{ steps.package.outputs.vsix-file }}
 
       - name: Share with organizations
-        if: steps.resolve-manifest.outputs.path == 'share'
+        if: steps.resolve-manifest.outputs.path == 'share' && vars.SHARE_ACCOUNTS != ''
         uses: jessehouwing/azdo-marketplace/share@main
         with:
           auth-type: pat
