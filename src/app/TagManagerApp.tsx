@@ -322,7 +322,14 @@ export const TagManagerApp: React.FC = () => {
         <MergeDialog
           sources={dialog.sources}
           allTags={tags}
-          onConfirm={(targetName) => runMergeJobs(dialog.sources, targetName)}
+          onConfirm={(targetName) =>
+            runMergeJobs(
+              dialog.sources.filter(
+                (s) => s.name.toLowerCase() !== targetName.toLowerCase()
+              ),
+              targetName
+            )
+          }
           onCancel={() => setDialog(null)}
         />
       )}
