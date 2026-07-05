@@ -62,6 +62,7 @@ export const MergeDialog: React.FC<MergeDialogProps> = ({
   const handlePillClick = (name: string) => {
     if (trimmed.toLowerCase() === name.toLowerCase()) {
       setTargetName("");
+      setHighlightedIndex(-1);
     } else {
       selectSuggestion(name);
     }
@@ -113,8 +114,9 @@ export const MergeDialog: React.FC<MergeDialogProps> = ({
       onDismiss={onCancel}
     >
       <MessageCard severity={MessageCardSeverity.Warning}>
-        The following tag{remainingSourceCount !== 1 ? "s" : ""} will be merged into
-        the target and removed from the project.
+        {targetIsSource
+          ? `The following tag${remainingSourceCount !== 1 ? "s" : ""} will be merged into the target and removed. The target tag will be kept.`
+          : `The following tag${remainingSourceCount !== 1 ? "s" : ""} will be merged into the target and removed from the project.`}
       </MessageCard>
       <div
         style={{
