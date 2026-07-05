@@ -1,0 +1,19 @@
+src/app/MergeDialog.tsx
+  s_d7ff8fa2ab8410::t_1aa84bd858b35e 116,138
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "422a1bb19f562834f938422b3dd71988a816e022",
+  "prompts": {},
+  "sessions": {
+    "s_d7ff8fa2ab8410": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a45e5571401095cfd",
+        "model": "unknown"
+      },
+      "human_author": "JJKW1984 <joseph.workman@gmail.com>"
+    }
+  }
+}
