@@ -1,0 +1,19 @@
+.github/workflows/build.yml
+  s_53ae40ac45c3c0::t_126482e5607d60 115-125
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "498ccda58635d4e8d605ffe77d622b1352a025af",
+  "prompts": {},
+  "sessions": {
+    "s_53ae40ac45c3c0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a31ae5a0b0d18b907",
+        "model": "unknown"
+      },
+      "human_author": "JJKW1984 <joseph.workman@gmail.com>"
+    }
+  }
+}
