@@ -113,7 +113,7 @@ export const MergeDialog: React.FC<MergeDialogProps> = ({
       onDismiss={onCancel}
     >
       <MessageCard severity={MessageCardSeverity.Warning}>
-        The following tag{sources.length !== 1 ? "s" : ""} will be merged into
+        The following tag{remainingSourceCount !== 1 ? "s" : ""} will be merged into
         the target and removed from the project.
       </MessageCard>
       <div
@@ -135,6 +135,7 @@ export const MergeDialog: React.FC<MergeDialogProps> = ({
             <div
               key={t.id}
               role="button"
+              aria-pressed={isTarget}
               tabIndex={0}
               onClick={() => handlePillClick(t.name)}
               onKeyDown={(e) => handlePillKeyDown(e, t.name)}
